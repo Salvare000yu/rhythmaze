@@ -154,9 +154,12 @@ void PlayScene::init() {
 						  WinAPI::window_width, WinAPI::window_height,
 						  Object3d::constantBufferNum, obj3dTexNum));
 
-	obj3d.reset(new Object3d(DirectXCommon::getInstance()->getDev(), model.get(), obj3dTexNum));
-	obj3d->scale = { obj3dScale, obj3dScale, obj3dScale };
-	obj3d->position = { 0, 0, obj3dScale };
+	constexpr UINT obj3dNum = 2;
+	for (UINT i = 0; i < obj3dNum; i++) {
+		obj3d.emplace_back(Object3d(DirectXCommon::getInstance()->getDev(), model.get(), obj3dTexNum));
+		obj3d[i].scale = { obj3dScale, obj3dScale, obj3dScale };
+		obj3d[i].position = { i * 4.f * obj3dScale, 0, obj3dScale };
+	}
 
 	sphere.reset(new Sphere(DirectXCommon::getInstance()->getDev(), 2.f, L"Resources/red.png", 0));
 
@@ -164,8 +167,8 @@ void PlayScene::init() {
 
 #pragma region ライト
 
-	light = obj3d->position;
-	light.x += obj3d->scale.y * 2;	// 仮
+	light = obj3d[0].position;
+	light.x += obj3d[0].scale.y * 2;	// 仮
 
 #pragma endregion ライト
 
@@ -329,11 +332,13 @@ void PlayScene::update() {
 							  timeAngle / XM_PI);
 
 		constexpr float lightR = 20.f;
-		light = obj3d->position;
+		light = obj3d[0].position;
 		light.x += mySin(timeAngle) * lightR;
 		light.z += myCos(timeAngle) * lightR;
 
-		obj3d->setLightPos(light);
+		for (UINT i = 0; i < obj3d.size(); i++) {
+			obj3d[i].setLightPos(light);
+		}
 
 		sphere->pos = light;
 	}
@@ -355,7 +360,7 @@ void PlayScene::update() {
 			particleNum = particleNumMax;
 			startScale = 10.f;
 		}
-		createParticle(obj3d->position, particleNum, startScale);
+		createParticle(obj3d[0].position, particleNum, startScale);
 
 		Sound::SoundPlayWave(soundCommon.get(), particleSE.get());
 	}
@@ -372,7 +377,9 @@ void PlayScene::draw() {
 	sphere->drawWithUpdate(camera->getViewMatrix(), dxCom);
 	// 3Dオブジェクトコマンド
 	Object3d::startDraw(dxCom->getCmdList(), object3dPipelineSet);
-	obj3d->drawWithUpdate(camera->getViewMatrix(), dxCom);
+	for (UINT i = 0; i < obj3d.size(); i++) {
+		obj3d[i].drawWithUpdate(camera->getViewMatrix(), dxCom);
+	}
 
 	ParticleManager::startDraw(dxCom->getCmdList(), object3dPipelineSet);
 	particleMgr->drawWithUpdate(dxCom->getCmdList());
