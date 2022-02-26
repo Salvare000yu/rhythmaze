@@ -182,7 +182,7 @@ void PlayScene::init() {
 	constexpr char mapCSVFilePath[] = "Resources/map/map.csv";
 	static auto mapFileData = loadCsv(mapCSVFilePath);
 
-	constexpr XMFLOAT4 wallCol = XMFLOAT4(1, 1, 0, 1);
+	constexpr XMFLOAT4 wallCol = XMFLOAT4(0.5f, 0.3f, 0, 1);
 	constexpr XMFLOAT4 backRoadCol = XMFLOAT4(1, 0, 1, 1);
 	constexpr XMFLOAT4 frontRoadCol = XMFLOAT4(0, 1, 1, 1);
 
@@ -447,7 +447,10 @@ void PlayScene::update() {
 			particleNum = particleNumMax;
 			startScale = 10.f;
 		}
-		createParticle(mapObj[0][0].position, particleNum, startScale);
+		auto playerPos = mapObj[1][1].position;
+		playerPos.y += obj3dScale * 2;
+
+		createParticle(playerPos, particleNum, startScale);
 
 		Sound::SoundPlayWave(soundCommon.get(), particleSE.get());
 	}
