@@ -8,9 +8,39 @@
 #include <xaudio2.h>
 #include "RandomNum.h"
 
+#include <fstream>
+#include <string>
+#include <vector>
+
 using namespace DirectX;
 
 namespace {
+
+	// @return 読み込んだcsvの中身。失敗したらデフォルトコンストラクタで初期化された空のvector2次元配列が返る
+	std::vector<std::vector<std::string>> loadCsv(const std::string& csvFilePath) {
+		std::vector<std::vector<std::string>> csvData{};	// csvの中身を格納
+
+		std::ifstream ifs(csvFilePath);
+		if (!ifs) {
+			return csvData;
+		}
+
+		std::string line{};
+		// 開いたファイルを一行読み込む(カーソルも動く)
+		for (unsigned i = 0U; std::getline(ifs, line); i++) {
+			csvData.emplace_back();
+
+			std::istringstream stream(line);
+			std::string field;
+			// 読み込んだ行を','区切りで分割
+			while (std::getline(stream, field, ',')) {
+				csvData[i].emplace_back(field);
+			}
+		}
+
+		return csvData;
+	}
+
 	// @return 0 <= ret[rad] < 2PI
 	float angleRoundRad(float rad) {
 		float angle = rad;
@@ -147,30 +177,81 @@ void PlayScene::init() {
 
 #pragma endregion スプライト
 
+#pragma region マップ
+
+	constexpr char mapCSVFilePath[] = "Resources/map/map.csv";
+	static auto mapFileData = loadCsv(mapCSVFilePath);
+
+	constexpr XMFLOAT4 wallCol = XMFLOAT4(1, 1, 0, 1);
+	constexpr XMFLOAT4 backRoadCol = XMFLOAT4(1, 0, 1, 1);
+	constexpr XMFLOAT4 frontRoadCol = XMFLOAT4(0, 1, 1, 1);
+
+	for (UINT y = 0; y < mapFileData.size(); y++) {
+		mapData.emplace_back();
+
+		for (UINT x = 0; x < mapFileData[y].size(); x++) {
+			mapData[y].emplace_back();
+
+			std::string chip = mapFileData[y][x];
+			if (chip == "1") {
+				mapData[y][x] = MAP_NUM::WALL;
+			} else if (chip == "2") {
+				mapData[y][x] = MAP_NUM::FRONT_ROAD;
+			} else if (chip == "3") {
+				mapData[y][x] = MAP_NUM::BACK_ROAD;
+			} else {
+				mapData[y][x] = MAP_NUM::UNDEF;
+			}
+		}
+	}
+
+#pragma endregion マップ
+
 #pragma region 3Dオブジェクト
 
 	model.reset(new Model(DirectXCommon::getInstance()->getDev(),
-						  L"Resources/model/model.obj", L"Resources/model/tex.png",
+						  L"Resources/model/box/box.obj", L"Resources/model/box/box.png",
 						  WinAPI::window_width, WinAPI::window_height,
 						  Object3d::constantBufferNum, obj3dTexNum));
 
-	constexpr UINT obj3dNum = 2;
-	for (UINT i = 0; i < obj3dNum; i++) {
-		obj3d.emplace_back(Object3d(DirectXCommon::getInstance()->getDev(), model.get(), obj3dTexNum));
-		obj3d[i].scale = { obj3dScale, obj3dScale, obj3dScale };
-		obj3d[i].position = { i * 4.f * obj3dScale, 0, obj3dScale };
-	}
-
 	sphere.reset(new Sphere(DirectXCommon::getInstance()->getDev(), 2.f, L"Resources/red.png", 0));
+
+	for (UINT y = 0; y < mapData.size(); y++) {
+		mapObj.emplace_back();
+		for (UINT x = 0; x < mapData[y].size(); x++) {
+			mapObj[y].emplace_back(Object3d(DirectXCommon::getInstance()->getDev(), model.get(), obj3dTexNum));
+			mapObj[y][x].scale = XMFLOAT3(obj3dScale, obj3dScale, obj3dScale);
+			mapObj[y][x].position = XMFLOAT3(x * 2.f * obj3dScale,
+											 -100,
+											 y * -2.f * obj3dScale);
+
+			switch (mapData[y][x]) {
+			case MAP_NUM::WALL:
+				mapObj[y][x].color = wallCol;
+				mapObj[y][x].scale.y *= 2.f;
+				mapObj[y][x].position.y += obj3dScale;
+				break;
+			case MAP_NUM::FRONT_ROAD:
+				mapObj[y][x].color = frontRoadCol;
+				break;
+			case MAP_NUM::BACK_ROAD:
+				mapObj[y][x].color = backRoadCol;
+				break;
+			default:
+				mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+			}
+		}
+	}
 
 #pragma endregion 3Dオブジェクト
 
 #pragma region ライト
 
-	light = obj3d[0].position;
-	light.x += obj3d[0].scale.y * 2;	// 仮
+	light = mapObj[0][0].position;
+	light.x += mapObj[0][0].scale.y * 2;	// 仮
 
 #pragma endregion ライト
+
 
 	// パーティクル初期化
 	particleMgr.reset(new ParticleManager(dxCom->getDev(), L"Resources/effect1.png", camera.get()));
@@ -332,12 +413,18 @@ void PlayScene::update() {
 							  timeAngle / XM_PI);
 
 		constexpr float lightR = 20.f;
-		light = obj3d[0].position;
-		light.x += mySin(timeAngle) * lightR;
+		light = mapObj[0][0].position;
+		light.x += mySin(timeAngle) * lightR * 4;
 		light.z += myCos(timeAngle) * lightR;
+		light.y += 100;
 
-		for (UINT i = 0; i < obj3d.size(); i++) {
-			obj3d[i].setLightPos(light);
+		//for (UINT i = 0; i < obj3d.size(); i++) {
+		//	//obj3d[i].setLightPos(light);
+		//}
+		for (UINT y = 0; y < mapData.size(); y++) {
+			for (UINT x = 0; x < mapData[y].size(); x++) {
+				mapObj[y][x].setLightPos(light);
+			}
 		}
 
 		sphere->pos = light;
@@ -360,7 +447,7 @@ void PlayScene::update() {
 			particleNum = particleNumMax;
 			startScale = 10.f;
 		}
-		createParticle(obj3d[0].position, particleNum, startScale);
+		createParticle(mapObj[0][0].position, particleNum, startScale);
 
 		Sound::SoundPlayWave(soundCommon.get(), particleSE.get());
 	}
@@ -377,8 +464,13 @@ void PlayScene::draw() {
 	sphere->drawWithUpdate(camera->getViewMatrix(), dxCom);
 	// 3Dオブジェクトコマンド
 	Object3d::startDraw(dxCom->getCmdList(), object3dPipelineSet);
-	for (UINT i = 0; i < obj3d.size(); i++) {
-		obj3d[i].drawWithUpdate(camera->getViewMatrix(), dxCom);
+	//for (UINT i = 0; i < obj3d.size(); i++) {
+	//	//obj3d[i].drawWithUpdate(camera->getViewMatrix(), dxCom);
+	//}
+	for (UINT y = 0; y < mapData.size(); y++) {
+		for (UINT x = 0; x < mapData[y].size(); x++) {
+			mapObj[y][x].drawWithUpdate(camera->getViewMatrix(), dxCom);
+		}
 	}
 
 	ParticleManager::startDraw(dxCom->getCmdList(), object3dPipelineSet);

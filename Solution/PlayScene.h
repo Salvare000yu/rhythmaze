@@ -22,6 +22,13 @@
 
 #include <vector>
 
+enum class MAP_NUM : unsigned short {
+	UNDEF,		// ñ¢íËã`
+	WALL,		// ï«
+	FRONT_ROAD,	// ï\îóÇÃìπ
+	BACK_ROAD,	// ó†îèÇÃìπ
+};
+
 class PlayScene :
 	public GameScene {
 
@@ -73,12 +80,11 @@ class PlayScene :
 
 	const UINT obj3dTexNum = 0U;
 	std::unique_ptr<Model> model;
-	std::vector<Object3d> obj3d;
 	const float obj3dScale = 10.f;
 
 	DirectX::XMFLOAT2 angle{};	// äeé≤é¸ÇËÇÃâÒì]äp
 
-
+	std::vector<std::vector<Object3d>> mapObj;
 
 	std::unique_ptr<Sphere> sphere;
 
@@ -95,6 +101,8 @@ class PlayScene :
 	std::unique_ptr<ParticleManager> particleMgr;
 
 	DirectXCommon* dxCom = nullptr;
+
+	std::vector<std::vector<MAP_NUM>> mapData;
 
 private:
 	void createParticle(const DirectX::XMFLOAT3 pos, const UINT particleNum = 10U, const float startScale = 1.f);
