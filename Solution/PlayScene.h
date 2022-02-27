@@ -82,13 +82,22 @@ class PlayScene :
 	std::unique_ptr<Model> model;
 	const float obj3dScale = 10.f;
 
+	const float mapSide = obj3dScale * 2;
+
 	DirectX::XMFLOAT2 angle{};	// 各軸周りの回転角
 
 	std::vector<std::vector<Object3d>> mapObj;
 
 	std::unique_ptr<Sphere> sphere;
 
+	std::unique_ptr<Model> playerModel;
+	std::unique_ptr<Object3d> playerObj;
+
+	DirectX::XMFLOAT2 playerMapPos;
+
 #pragma endregion 3Dオブジェクト
+
+	bool playerMoved = false;
 
 	DirectX::XMFLOAT3 light{};
 
