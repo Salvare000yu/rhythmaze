@@ -129,7 +129,7 @@ void PlayScene::init() {
 #pragma region 音
 
 	soundCommon.reset(new Sound::SoundCommon());
-	soundData1.reset(new Sound("Resources/BGM.wav", soundCommon.get()));
+	soundData1.reset(new Sound("Resources/Music/mmc_140_BGM1.wav", soundCommon.get()));
 
 	particleSE.reset(new Sound("Resources/SE/Sys_Set03-click.wav", soundCommon.get()));
 
@@ -214,8 +214,6 @@ void PlayScene::init() {
 						  WinAPI::window_width, WinAPI::window_height,
 						  Object3d::constantBufferNum, obj3dTexNum));
 
-	sphere.reset(new Sphere(DirectXCommon::getInstance()->getDev(), 2.f, L"Resources/red.png", 0));
-
 	for (UINT y = 0; y < mapData.size(); y++) {
 		mapObj.emplace_back();
 		for (UINT x = 0; x < mapData[y].size(); x++) {
@@ -268,6 +266,8 @@ void PlayScene::init() {
 	// パーティクル初期化
 	particleMgr.reset(new ParticleManager(dxCom->getDev(), L"Resources/effect1.png", camera.get()));
 
+	Sound::SoundPlayWave(soundCommon.get(), soundData1.get(), XAUDIO2_LOOP_INFINITE);
+
 	// 時間初期化
 	timer.reset(new Time());
 }
@@ -278,33 +278,6 @@ void PlayScene::update() {
 	if (input->triggerKey(DIK_SPACE)) {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::END);
 	}
-
-#pragma region 音
-
-	// 数字の0キーが押された瞬間音を再生しなおす
-	if (input->triggerKey(DIK_0)) {
-		//Sound::SoundStopWave(soundData1);
-
-		if (Sound::checkPlaySound(soundData1.get())) {
-			Sound::SoundStopWave(soundData1.get());
-		} else {
-			Sound::SoundPlayWave(soundCommon.get(), soundData1.get(), XAUDIO2_LOOP_INFINITE);
-		}
-	}
-
-	{
-		std::string stateStr = "STOP []";
-		if (Sound::checkPlaySound(soundData1.get())) {
-			stateStr = "PLAY |>";
-		}
-		debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 2, 1.f, XMFLOAT4(1, 1, 1, 1), "BGM_STATE : %s", stateStr.c_str());
-
-		debugText.Print(spriteCommon, "0 : Play/Stop BGM", 0, debugText.fontHeight * 3);
-
-		debugText.Print(spriteCommon, "P : create particle(play SE)", 0, debugText.fontHeight * 4);
-	}
-
-#pragma endregion 音
 
 #pragma region マウス
 
@@ -345,11 +318,13 @@ void PlayScene::update() {
 	debugText.formatPrint(spriteCommon, 0, 0, 1.f,
 						  XMFLOAT4(1, 1, 1, 1), "FPS : %f", dxCom->getFPS());
 
-	if (input->hitKey(DIK_R)) timer->reset();
-
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 15, 1.f,
 						  XMFLOAT4(1, 1, 1, 1),
 						  "Time : %.6f[s]", (long double)timer->getNowTime() / Time::oneSec);
+
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 16, 1.f,
+						  XMFLOAT4(1, 1, 1, 1),
+						  "beat : %u", beatChangeNum);
 
 #pragma endregion 時間
 
@@ -360,6 +335,8 @@ void PlayScene::update() {
 		if (input->hitKey(DIK_LSHIFT)) debugText.tabSize = 4U;
 	}
 
+	debugText.Print(spriteCommon, "P : create particle(play SE)", 0, debugText.fontHeight * 4);
+
 	debugText.formatPrint(spriteCommon, debugText.fontWidth * 2, debugText.fontHeight * 17, 1.f,
 						  XMFLOAT4(1, 1, 1, 1),
 						  "newLine\ntab(size %u)\tendString", debugText.tabSize);
@@ -367,7 +344,7 @@ void PlayScene::update() {
 	debugText.Print(spriteCommon, "SPACE : end", 0, debugText.fontHeight * 6, 1.f, XMFLOAT4(1, 0.5f, 0.5f, 1));
 
 	debugText.Print(spriteCommon, "WASD : move camera", 0, debugText.fontHeight * 8);
-	debugText.Print(spriteCommon, "arrow : rotation camera", 0, debugText.fontHeight * 9);
+	debugText.Print(spriteCommon, "IJKL : rotation camera & move UI", 0, debugText.fontHeight * 9);
 
 #pragma endregion 情報表示
 
@@ -413,9 +390,47 @@ void PlayScene::update() {
 
 #pragma endregion カメラ移動回転
 
-#pragma region プレイヤー移動
+#pragma region 音タイミング
 
 	{
+		const auto nowTime = timer->getNowTime();	// 今の時間
+		constexpr float bpm = 140;	// beat / min 毎分何拍か
+		const auto oneBeatTime = timer->getOneBeatTime(bpm);	// 一拍の時間を記録
+
+		constexpr float aheadJudgeRange = 0.125f;	// この値分次の拍の始まりが速くなる[0~1]
+
+		// 拍が変わったら
+		if (nowTime >= oneBeatTime * (beatChangeNum + 1) - oneBeatTime * aheadJudgeRange) {
+			beatChangeNum++;
+			beatChangeTime = nowTime;	// 今の時間を記録
+			playerMoved = false;
+		}
+
+		const float beatRaito = (nowTime - beatChangeTime) / (float)oneBeatTime;	// 今の拍の進行度[0~1]
+
+		// この範囲内なら移動はできない
+		if (0.5f < beatRaito && beatRaito < 1.f - aheadJudgeRange) {
+			playerMoved = true;
+		}
+
+		debugText.Print(spriteCommon, "O    N\nK    G", 0, debugText.fontHeight,
+						1.f, XMFLOAT4(1, 1, 1, 0.5f));
+
+		debugText.Print(spriteCommon,
+						playerMoved == false ? "O\nK" : "N\nG",
+						beatRaito * 5.f * debugText.fontWidth, debugText.fontHeight,
+						1.f,
+						XMFLOAT4(1, (float)!playerMoved, 1, 1));
+
+	}
+
+#pragma endregion 音タイミング
+
+
+#pragma region プレイヤー移動
+
+	// 移動可能なら
+	if (playerMoved == false) {
 		constexpr uint8_t up = 0b0001u;
 		constexpr uint8_t down = 0b0010u;
 		constexpr uint8_t left = 0b0100u;
@@ -423,6 +438,7 @@ void PlayScene::update() {
 
 		uint8_t moveDir = 0u;
 
+		// 押した方向を記録
 		if (input->triggerKey(DIK_UP)) {
 			moveDir = up;
 		} else if (input->triggerKey(DIK_DOWN)) {
@@ -433,6 +449,7 @@ void PlayScene::update() {
 			moveDir = right;
 		}
 
+		// 押した方向に移動できるなら、移動後のマップ座標を記録
 		switch (moveDir) {
 		case up:
 			if (playerMapPos.y - 1 >= 0 &&
@@ -464,8 +481,11 @@ void PlayScene::update() {
 			break;
 		}
 
+		// 移動するなら
 		if (playerMoved) {
-			//playerObj->position = mapObj[playerMapPos.y][playerMapPos.x].position;
+			// パーティクル開始
+			createParticleFlag = true;
+			// 移動後の座標を反映
 			playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
 										   playerObj->position.y,
 										   playerMapPos.y * -mapSide);
@@ -477,12 +497,12 @@ void PlayScene::update() {
 #pragma region パーティクル
 
 	// Pを押すたびパーティクル50粒追加
-	if (playerMoved) {
+	if (createParticleFlag) {
 		constexpr UINT particleNumMax = 50U, particleNumMin = 20U;
 		UINT particleNum = particleNumMin;
 
 		float startScale = 5.f;
-
+		// todo コンボ数(未実装)に応じて派手にする
 		if (input->hitKey(DIK_U)) {
 			particleNum = particleNumMax;
 			startScale = 10.f;
@@ -490,43 +510,25 @@ void PlayScene::update() {
 
 		createParticle(playerObj->position, particleNum, startScale);
 
+		// SE鳴らす
 		Sound::SoundPlayWave(soundCommon.get(), particleSE.get());
 
-		playerMoved = false;
+		createParticleFlag = false;
 	}
 
 #pragma endregion パーティクル
 
 #pragma region ライト
 	{
-		//// 一秒で一周(2PI[rad])
-		//auto timeAngle = angleRoundRad((float)timer->getNowTime() / Time::oneSec * XM_2PI);
-
-		//debugText.formatPrint(spriteCommon,
-		//					  debugText.fontWidth * 16, debugText.fontHeight * 16, 1.f,
-		//					  XMFLOAT4(1, 1, 1, 1),
-		//					  "light angle : %f PI [rad]",
-		//					  timeAngle / XM_PI);
-
-		//constexpr float lightR = 20.f;
-		//light = mapObj[0][0].position;
-		//light.x += mySin(timeAngle) * lightR * 4;
-		//light.z += myCos(timeAngle) * lightR;
-		//light.y += 100;
 
 		// プレイヤーの位置にライトを置く
 		light = playerObj->position;
 
-		//for (UINT i = 0; i < obj3d.size(); i++) {
-		//	//obj3d[i].setLightPos(light);
-		//}
 		for (UINT y = 0; y < mapData.size(); y++) {
 			for (UINT x = 0; x < mapData[y].size(); x++) {
 				mapObj[y][x].setLightPos(light);
 			}
 		}
-
-		sphere->pos = light;
 	}
 #pragma endregion ライト
 
@@ -542,9 +544,6 @@ void PlayScene::update() {
 
 void PlayScene::draw() {
 	// ４．描画コマンドここから
-	// 球体コマンド
-	Sphere::sphereCommonBeginDraw(object3dPipelineSet);
-	sphere->drawWithUpdate(camera->getViewMatrix(), dxCom);
 	// 3Dオブジェクトコマンド
 	Object3d::startDraw(dxCom->getCmdList(), object3dPipelineSet);
 	//for (UINT i = 0; i < obj3d.size(); i++) {
