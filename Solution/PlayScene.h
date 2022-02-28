@@ -10,8 +10,6 @@
 
 #include <DirectXMath.h>
 
-#include "Sphere.h"
-
 #include "Camera.h"
 
 #include "ParticleManager.h"
@@ -88,8 +86,6 @@ class PlayScene :
 
 	std::vector<std::vector<Object3d>> mapObj;
 
-	std::unique_ptr<Sphere> sphere;
-
 	std::unique_ptr<Model> playerModel;
 	std::unique_ptr<Object3d> playerObj;
 
@@ -98,6 +94,11 @@ class PlayScene :
 #pragma endregion 3Dオブジェクト
 
 	bool playerMoved = false;
+	bool createParticleFlag = false;
+
+	uint16_t beatChangeNum = 0;
+
+	Time::timeType beatChangeTime = 0;
 
 	DirectX::XMFLOAT3 light{};
 
