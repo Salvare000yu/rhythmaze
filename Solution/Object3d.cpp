@@ -43,7 +43,7 @@ Object3d::Object3d(ID3D12Device* dev, Model* model, const UINT texNum) : texNum(
 	this->model = model;
 }
 
-void Object3d::update(const XMMATRIX& matView) {
+void Object3d::update(const XMMATRIX& matView, ID3D12Device* dev) {
 	XMMATRIX matScale, matRot, matTrans;
 
 	// スケール、回転、平行移動行列の計算
@@ -71,10 +71,11 @@ void Object3d::update(const XMMATRIX& matView) {
 	if (SUCCEEDED(constBuff->Map(0, nullptr, (void**)&constMap))) {
 		constMap->color = color; // RGBA
 		constMap->mat = matWorld * matView * model->getMatProjection();
+		constMap->light = light;
 		constBuff->Unmap(0, nullptr);
 	}
 
-	model->update(matView);
+	model->update(dev);
 }
 
 void Object3d::draw(DirectXCommon* dxCom) {
@@ -82,7 +83,7 @@ void Object3d::draw(DirectXCommon* dxCom) {
 }
 
 void Object3d::drawWithUpdate(const XMMATRIX& matView, DirectXCommon* dxCom) {
-	update(matView);
+	update(matView, dxCom->getDev());
 	draw(dxCom);
 }
 
@@ -166,9 +167,6 @@ Object3d::PipelineSet Object3d::createGraphicsPipeline(ID3D12Device* dev,
 		},
 		{
 			"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-		},
-		{
-			"LIGHT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 		}
 	};	// 1行で書いたほうが見やすい
 

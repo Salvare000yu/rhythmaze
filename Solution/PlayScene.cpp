@@ -8,9 +8,39 @@
 #include <xaudio2.h>
 #include "RandomNum.h"
 
+#include <fstream>
+#include <string>
+#include <vector>
+
 using namespace DirectX;
 
 namespace {
+
+	// @return 読み込んだcsvの中身。失敗したらデフォルトコンストラクタで初期化された空のvector2次元配列が返る
+	std::vector<std::vector<std::string>> loadCsv(const std::string& csvFilePath) {
+		std::vector<std::vector<std::string>> csvData{};	// csvの中身を格納
+
+		std::ifstream ifs(csvFilePath);
+		if (!ifs) {
+			return csvData;
+		}
+
+		std::string line{};
+		// 開いたファイルを一行読み込む(カーソルも動く)
+		for (unsigned i = 0U; std::getline(ifs, line); i++) {
+			csvData.emplace_back();
+
+			std::istringstream stream(line);
+			std::string field;
+			// 読み込んだ行を','区切りで分割
+			while (std::getline(stream, field, ',')) {
+				csvData[i].emplace_back(field);
+			}
+		}
+
+		return csvData;
+	}
+
 	// @return 0 <= ret[rad] < 2PI
 	float angleRoundRad(float rad) {
 		float angle = rad;
@@ -147,27 +177,93 @@ void PlayScene::init() {
 
 #pragma endregion スプライト
 
+#pragma region マップ
+
+	constexpr char mapCSVFilePath[] = "Resources/map/map.csv";
+	static auto mapFileData = loadCsv(mapCSVFilePath);
+
+	constexpr XMFLOAT4 wallCol = XMFLOAT4(0.5f, 0.3f, 0, 1);
+	constexpr XMFLOAT4 backRoadCol = XMFLOAT4(1, 0, 1, 1);
+	constexpr XMFLOAT4 frontRoadCol = XMFLOAT4(0, 1, 1, 1);
+
+	for (UINT y = 0; y < mapFileData.size(); y++) {
+		mapData.emplace_back();
+
+		for (UINT x = 0; x < mapFileData[y].size(); x++) {
+			mapData[y].emplace_back();
+
+			std::string chip = mapFileData[y][x];
+			if (chip == "1") {
+				mapData[y][x] = MAP_NUM::WALL;
+			} else if (chip == "2") {
+				mapData[y][x] = MAP_NUM::FRONT_ROAD;
+			} else if (chip == "3") {
+				mapData[y][x] = MAP_NUM::BACK_ROAD;
+			} else {
+				mapData[y][x] = MAP_NUM::UNDEF;
+			}
+		}
+	}
+
+#pragma endregion マップ
+
 #pragma region 3Dオブジェクト
 
 	model.reset(new Model(DirectXCommon::getInstance()->getDev(),
-						  L"Resources/model/model.obj", L"Resources/model/tex.png",
+						  L"Resources/model/box/box.obj", L"Resources/model/box/box.png",
 						  WinAPI::window_width, WinAPI::window_height,
 						  Object3d::constantBufferNum, obj3dTexNum));
 
-	obj3d.reset(new Object3d(DirectXCommon::getInstance()->getDev(), model.get(), obj3dTexNum));
-	obj3d->scale = { obj3dScale, obj3dScale, obj3dScale };
-	obj3d->position = { 0, 0, obj3dScale };
-
 	sphere.reset(new Sphere(DirectXCommon::getInstance()->getDev(), 2.f, L"Resources/red.png", 0));
+
+	for (UINT y = 0; y < mapData.size(); y++) {
+		mapObj.emplace_back();
+		for (UINT x = 0; x < mapData[y].size(); x++) {
+			mapObj[y].emplace_back(Object3d(DirectXCommon::getInstance()->getDev(), model.get(), obj3dTexNum));
+			mapObj[y][x].scale = XMFLOAT3(obj3dScale, obj3dScale, obj3dScale);
+			mapObj[y][x].position = XMFLOAT3(x * mapSide,
+											 -100,
+											 y * -mapSide);
+
+			switch (mapData[y][x]) {
+			case MAP_NUM::WALL:
+				mapObj[y][x].color = wallCol;
+				mapObj[y][x].scale.y *= 2.f;
+				mapObj[y][x].position.y += obj3dScale;
+				break;
+			case MAP_NUM::FRONT_ROAD:
+				mapObj[y][x].color = frontRoadCol;
+				break;
+			case MAP_NUM::BACK_ROAD:
+				mapObj[y][x].color = backRoadCol;
+				break;
+			default:
+				mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+			}
+		}
+	}
+
+	constexpr XMFLOAT2 startMapPos = XMFLOAT2(1, 1);
+	playerMapPos = startMapPos;
+
+	playerModel.reset(new Model(DirectXCommon::getInstance()->getDev(),
+								L"Resources/model/player/model.obj", L"Resources/model/player/tex.png",
+								WinAPI::window_width, WinAPI::window_height,
+								Object3d::constantBufferNum, 0));
+	playerObj.reset(new Object3d(dxCom->getDev(), playerModel.get(), 0));
+	playerObj->scale = { obj3dScale, obj3dScale, obj3dScale };
+	playerObj->position = mapObj[startMapPos.x][startMapPos.y].position;
+	playerObj->position.y += mapSide;
 
 #pragma endregion 3Dオブジェクト
 
 #pragma region ライト
 
-	light = obj3d->position;
-	light.x += obj3d->scale.y * 2;	// 仮
+	light = mapObj[0][0].position;
+	light.x += mapObj[0][0].scale.y * 2;	// 仮
 
 #pragma endregion ライト
+
 
 	// パーティクル初期化
 	particleMgr.reset(new ParticleManager(dxCom->getDev(), L"Resources/effect1.png", camera.get()));
@@ -281,17 +377,17 @@ void PlayScene::update() {
 
 		const float rotaVal = XM_PIDIV2 / DirectXCommon::getInstance()->getFPS();	// 毎秒四半周
 
-		if (input->hitKey(DIK_RIGHT)) {
+		if (input->hitKey(DIK_L)) {
 			angle.y += rotaVal;
 			if (angle.y > XM_PI * 2) { angle.y = 0; }
-		} else if (input->hitKey(DIK_LEFT)) {
+		} else if (input->hitKey(DIK_J)) {
 			angle.y -= rotaVal;
 			if (angle.y < 0) { angle.y = XM_PI * 2; }
 		}
 
-		if (input->hitKey(DIK_UP)) {
+		if (input->hitKey(DIK_I)) {
 			if (angle.x + rotaVal < XM_PIDIV2) angle.x += rotaVal;
-		} else if (input->hitKey(DIK_DOWN)) {
+		} else if (input->hitKey(DIK_K)) {
 			if (angle.x - rotaVal > -XM_PIDIV2) angle.x -= rotaVal;
 		}
 
@@ -317,35 +413,71 @@ void PlayScene::update() {
 
 #pragma endregion カメラ移動回転
 
-#pragma region ライト
+#pragma region プレイヤー移動
+
 	{
-		// 一秒で一周(2PI[rad])
-		auto timeAngle = angleRoundRad((float)timer->getNowTime() / Time::oneSec * XM_2PI);
+		constexpr uint8_t up = 0b0001u;
+		constexpr uint8_t down = 0b0010u;
+		constexpr uint8_t left = 0b0100u;
+		constexpr uint8_t right = 0b1000u;
 
-		debugText.formatPrint(spriteCommon,
-							  debugText.fontWidth * 16, debugText.fontHeight * 16, 1.f,
-							  XMFLOAT4(1, 1, 1, 1),
-							  "light angle : %f PI [rad]",
-							  timeAngle / XM_PI);
+		uint8_t moveDir = 0u;
 
-		constexpr float lightR = 20.f;
-		light = obj3d->position;
-		light.x += mySin(timeAngle) * lightR;
-		light.z += myCos(timeAngle) * lightR;
+		if (input->triggerKey(DIK_UP)) {
+			moveDir = up;
+		} else if (input->triggerKey(DIK_DOWN)) {
+			moveDir = down;
+		} else if (input->triggerKey(DIK_LEFT)) {
+			moveDir = left;
+		} else if (input->triggerKey(DIK_RIGHT)) {
+			moveDir = right;
+		}
 
-		obj3d->setLightPos(light);
+		switch (moveDir) {
+		case up:
+			if (playerMapPos.y - 1 >= 0 &&
+				mapData[playerMapPos.y - 1][playerMapPos.x] != MAP_NUM::WALL) {
+				playerMapPos.y--;
+				playerMoved = true;
+			}
+			break;
+		case down:
+			if (playerMapPos.y + 1 <= mapData.size() - 1 &&
+				mapData[playerMapPos.y + 1][playerMapPos.x] != MAP_NUM::WALL) {
+				playerMapPos.y++;
+				playerMoved = true;
+			}
+			break;
+		case left:
+			if (playerMapPos.x - 1 >= 0 &&
+				mapData[playerMapPos.y][playerMapPos.x - 1] != MAP_NUM::WALL) {
+				playerMapPos.x--;
+				playerMoved = true;
+			}
+			break;
+		case right:
+			if (playerMapPos.x + 1 <= mapData[0].size() - 1 &&
+				mapData[playerMapPos.y][playerMapPos.x + 1] != MAP_NUM::WALL) {
+				playerMapPos.x++;
+				playerMoved = true;
+			}
+			break;
+		}
 
-		sphere->pos = light;
+		if (playerMoved) {
+			//playerObj->position = mapObj[playerMapPos.y][playerMapPos.x].position;
+			playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
+										   playerObj->position.y,
+										   playerMapPos.y * -mapSide);
+		}
 	}
-#pragma endregion ライト
 
-#pragma region スプライト
+#pragma endregion プレイヤー移動
 
-	if (input->hitKey(DIK_I)) sprites[0].position.y -= 10; else if (input->hitKey(DIK_K)) sprites[0].position.y += 10;
-	if (input->hitKey(DIK_J)) sprites[0].position.x -= 10; else if (input->hitKey(DIK_L)) sprites[0].position.x += 10;
+#pragma region パーティクル
 
 	// Pを押すたびパーティクル50粒追加
-	if (input->triggerKey(DIK_P)) {
+	if (playerMoved) {
 		constexpr UINT particleNumMax = 50U, particleNumMin = 20U;
 		UINT particleNum = particleNumMin;
 
@@ -355,10 +487,53 @@ void PlayScene::update() {
 			particleNum = particleNumMax;
 			startScale = 10.f;
 		}
-		createParticle(obj3d->position, particleNum, startScale);
+
+		createParticle(playerObj->position, particleNum, startScale);
 
 		Sound::SoundPlayWave(soundCommon.get(), particleSE.get());
+
+		playerMoved = false;
 	}
+
+#pragma endregion パーティクル
+
+#pragma region ライト
+	{
+		//// 一秒で一周(2PI[rad])
+		//auto timeAngle = angleRoundRad((float)timer->getNowTime() / Time::oneSec * XM_2PI);
+
+		//debugText.formatPrint(spriteCommon,
+		//					  debugText.fontWidth * 16, debugText.fontHeight * 16, 1.f,
+		//					  XMFLOAT4(1, 1, 1, 1),
+		//					  "light angle : %f PI [rad]",
+		//					  timeAngle / XM_PI);
+
+		//constexpr float lightR = 20.f;
+		//light = mapObj[0][0].position;
+		//light.x += mySin(timeAngle) * lightR * 4;
+		//light.z += myCos(timeAngle) * lightR;
+		//light.y += 100;
+
+		// プレイヤーの位置にライトを置く
+		light = playerObj->position;
+
+		//for (UINT i = 0; i < obj3d.size(); i++) {
+		//	//obj3d[i].setLightPos(light);
+		//}
+		for (UINT y = 0; y < mapData.size(); y++) {
+			for (UINT x = 0; x < mapData[y].size(); x++) {
+				mapObj[y][x].setLightPos(light);
+			}
+		}
+
+		sphere->pos = light;
+	}
+#pragma endregion ライト
+
+#pragma region スプライト
+
+	if (input->hitKey(DIK_I)) sprites[0].position.y -= 10; else if (input->hitKey(DIK_K)) sprites[0].position.y += 10;
+	if (input->hitKey(DIK_J)) sprites[0].position.x -= 10; else if (input->hitKey(DIK_L)) sprites[0].position.x += 10;
 
 #pragma endregion スプライト
 
@@ -372,7 +547,15 @@ void PlayScene::draw() {
 	sphere->drawWithUpdate(camera->getViewMatrix(), dxCom);
 	// 3Dオブジェクトコマンド
 	Object3d::startDraw(dxCom->getCmdList(), object3dPipelineSet);
-	obj3d->drawWithUpdate(camera->getViewMatrix(), dxCom);
+	//for (UINT i = 0; i < obj3d.size(); i++) {
+	//	//obj3d[i].drawWithUpdate(camera->getViewMatrix(), dxCom);
+	//}
+	for (UINT y = 0; y < mapData.size(); y++) {
+		for (UINT x = 0; x < mapData[y].size(); x++) {
+			mapObj[y][x].drawWithUpdate(camera->getViewMatrix(), dxCom);
+		}
+	}
+	playerObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 
 	ParticleManager::startDraw(dxCom->getCmdList(), object3dPipelineSet);
 	particleMgr->drawWithUpdate(dxCom->getCmdList());
@@ -396,7 +579,7 @@ void PlayScene::fin() {
 void PlayScene::createParticle(const DirectX::XMFLOAT3 pos, const UINT particleNum, const float startScale) {
 	for (UINT i = 0U; i < particleNum; i++) {
 
-		const float theata = RandomNum::getRandf(0, XM_PI);
+		const float theata = RandomNum::getRandf(0, XM_PIDIV2);
 		const float phi = RandomNum::getRandf(0, XM_PI * 2.f);
 		const float r = RandomNum::getRandf(0, 5.f);
 
@@ -422,7 +605,7 @@ void PlayScene::createParticle(const DirectX::XMFLOAT3 pos, const UINT particleN
 		acc.z = 0.f;*/
 
 
-		constexpr auto startCol = XMFLOAT3(1, 1, 0.25f), endCol = XMFLOAT3(1, 0, 1);
+		constexpr auto startCol = XMFLOAT3(1, 1, 0.75f), endCol = XMFLOAT3(1, 0, 1);
 		constexpr int life = Time::oneSec / 4;
 		constexpr float endScale = 0.f;
 		constexpr float startRota = 0.f, endRota = 0.f;

@@ -19,7 +19,6 @@ class Model {
 		XMFLOAT3 pos;		// xyz座標
 		XMFLOAT3 normal;	// 法線ベクトル
 		XMFLOAT2 uv;		// uv座標
-		XMFLOAT3 light;		// 光源->オブジェクト
 	};
 
 	// --------------------
@@ -56,6 +55,7 @@ private:
 	// obj3d分け モデル
 	// --------------------
 	std::vector<Vertex> vertices{};
+	bool vertDirty = false;
 	ComPtr<ID3D12Resource> vertBuff;
 	D3D12_VERTEX_BUFFER_VIEW vbView;
 	Vertex* vertMap{};
@@ -69,24 +69,19 @@ private:
 	// 射影変換行列
 	XMMATRIX matProjection;
 
-	XMFLOAT3 light = XMFLOAT3(1, -1, 1);
-	bool dirtyFlag = false;
 
+	inline std::vector<Vertex> getVertices() const { return vertices; }
+	inline void setVertices(const std::vector<Vertex> vertices) { this->vertices = vertices; vertDirty = true; }
 
-	void loadModel(ID3D12Device* dev, std::vector<Vertex>& vertices, std::vector<unsigned short>& indices, const wchar_t* objPath,
-		const int window_width, const int window_height,
-		ComPtr<ID3D12Resource>& vertBuff, Vertex* vertMap, D3D12_VERTEX_BUFFER_VIEW& vbView,
-		ComPtr<ID3D12Resource>& indexBuff, D3D12_INDEX_BUFFER_VIEW& ibView,
-		XMMATRIX& matProjection);
+	void loadModel(ID3D12Device* dev,
+				   const wchar_t* objPath,
+				   const int window_width, const int window_height);
 
 	void loadSphere(ID3D12Device* dev, const float r, const int window_width, const int window_height);
 
 	void transVertBuff(ID3D12Device* dev);
 
 public:
-	inline void setLightDir(XMFLOAT3 light) { this->light = light; dirtyFlag = true; }
-	inline XMFLOAT3 getLightDir() { return light; }
-
 	void loadTexture(ID3D12Device* dev, const wchar_t* texPath, const UINT texNum);
 
 	void setTexture(ID3D12Device* dev, UINT newTexNum);
@@ -107,7 +102,7 @@ public:
 
 	XMMATRIX getMatProjection();
 
-	void update(const XMMATRIX & matView);
+	void update(ID3D12Device* dev);
 
 	void draw(ID3D12Device* dev, ID3D12GraphicsCommandList* cmdList, ComPtr<ID3D12Resource> constBuff, const int constantBufferNum, const UINT texNum);
 };
