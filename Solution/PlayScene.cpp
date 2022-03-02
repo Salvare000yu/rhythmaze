@@ -397,30 +397,36 @@ void PlayScene::update() {
 		constexpr float bpm = 140;	// beat / min 毎分何拍か
 		const auto oneBeatTime = timer->getOneBeatTime(bpm);	// 一拍の時間を記録
 
-		constexpr float aheadJudgeRange = 0.125f;	// この値分次の拍の始まりが速くなる[0~1]
+		constexpr float aheadJudgeRange = 0.25f;	// この値分次の拍の始まりが速くなる[0~1]
 
 		// 拍が変わったら
 		if (nowTime >= oneBeatTime * (beatChangeNum + 1) - oneBeatTime * aheadJudgeRange) {
 			beatChangeNum++;
 			beatChangeTime = nowTime;	// 今の時間を記録
-			playerMoved = false;
+
+			if (playerMoved) {
+				playerMoved = false;
+			} else combo = 0U;
 		}
+		debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1.f,
+							  XMFLOAT4(1, 1, 1, 1),
+							  "%u combo", combo);
 
 		const float beatRaito = (nowTime - beatChangeTime) / (float)oneBeatTime;	// 今の拍の進行度[0~1]
 
 		// この範囲内なら移動はできない
 		if (0.5f < beatRaito && beatRaito < 1.f - aheadJudgeRange) {
-			playerMoved = true;
-		}
+			movableFlag = false;
+		} else movableFlag = true;
 
 		debugText.Print(spriteCommon, "O    N\nK    G", 0, debugText.fontHeight,
 						1.f, XMFLOAT4(1, 1, 1, 0.5f));
 
 		debugText.Print(spriteCommon,
-						playerMoved == false ? "O\nK" : "N\nG",
+						movableFlag == true ? "O\nK" : "N\nG",
 						beatRaito * 5.f * debugText.fontWidth, debugText.fontHeight,
 						1.f,
-						XMFLOAT4(1, (float)!playerMoved, 1, 1));
+						XMFLOAT4(1, (float)movableFlag, 1, 1));
 
 	}
 
@@ -428,70 +434,88 @@ void PlayScene::update() {
 
 
 #pragma region プレイヤー移動
+	// 移動の入力があったら
+	if (input->triggerKey(DIK_UP) || input->triggerKey(DIK_DOWN) ||
+		   input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_RIGHT)) {
 
-	// 移動可能なら
-	if (playerMoved == false) {
-		constexpr uint8_t up = 0b0001u;
-		constexpr uint8_t down = 0b0010u;
-		constexpr uint8_t left = 0b0100u;
-		constexpr uint8_t right = 0b1000u;
+		// 移動可能なら
+		if (playerMoved == false && movableFlag) {
+			constexpr uint8_t up = 0b0001u;
+			constexpr uint8_t down = 0b0010u;
+			constexpr uint8_t left = 0b0100u;
+			constexpr uint8_t right = 0b1000u;
 
-		uint8_t moveDir = 0u;
+			uint8_t moveDir = 0u;
 
-		// 押した方向を記録
-		if (input->triggerKey(DIK_UP)) {
-			moveDir = up;
-		} else if (input->triggerKey(DIK_DOWN)) {
-			moveDir = down;
-		} else if (input->triggerKey(DIK_LEFT)) {
-			moveDir = left;
-		} else if (input->triggerKey(DIK_RIGHT)) {
-			moveDir = right;
+			// 押した方向を記録
+			if (input->triggerKey(DIK_UP)) {
+				moveDir = up;
+			} else if (input->triggerKey(DIK_DOWN)) {
+				moveDir = down;
+			} else if (input->triggerKey(DIK_LEFT)) {
+				moveDir = left;
+			} else if (input->triggerKey(DIK_RIGHT)) {
+				moveDir = right;
+			}
+
+			// 押した方向に移動できるなら、移動後のマップ座標を記録
+			switch (moveDir) {
+			case up:
+				if (playerMapPos.y - 1 >= 0 &&
+					mapData[playerMapPos.y - 1][playerMapPos.x] != MAP_NUM::WALL) {
+					playerMapPos.y--;
+					playerMoved = true;
+				}
+				break;
+			case down:
+				if (playerMapPos.y + 1 <= mapData.size() - 1 &&
+					mapData[playerMapPos.y + 1][playerMapPos.x] != MAP_NUM::WALL) {
+					playerMapPos.y++;
+					playerMoved = true;
+				}
+				break;
+			case left:
+				if (playerMapPos.x - 1 >= 0 &&
+					mapData[playerMapPos.y][playerMapPos.x - 1] != MAP_NUM::WALL) {
+					playerMapPos.x--;
+					playerMoved = true;
+				}
+				break;
+			case right:
+				if (playerMapPos.x + 1 <= mapData[0].size() - 1 &&
+					mapData[playerMapPos.y][playerMapPos.x + 1] != MAP_NUM::WALL) {
+					playerMapPos.x++;
+					playerMoved = true;
+				}
+				break;
+			}
+
+			// 移動するなら
+			if (playerMoved) {
+				// パーティクル開始
+				createParticleFlag = true;
+				// コンボ数加算
+				combo++;
+				// 移動後の座標を反映
+				playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
+											   playerObj->position.y,
+											   playerMapPos.y * -mapSide);
+			} else if (moveDir == up || moveDir == down ||
+					 moveDir == left || moveDir == right) {
+				// 押したが移動しなかった = ミス
+				missFlag = true;
+			}
+		} else {
+			// 動けない状態で動こうとした = ミス
+			missFlag = true;
 		}
 
-		// 押した方向に移動できるなら、移動後のマップ座標を記録
-		switch (moveDir) {
-		case up:
-			if (playerMapPos.y - 1 >= 0 &&
-				mapData[playerMapPos.y - 1][playerMapPos.x] != MAP_NUM::WALL) {
-				playerMapPos.y--;
-				playerMoved = true;
-			}
-			break;
-		case down:
-			if (playerMapPos.y + 1 <= mapData.size() - 1 &&
-				mapData[playerMapPos.y + 1][playerMapPos.x] != MAP_NUM::WALL) {
-				playerMapPos.y++;
-				playerMoved = true;
-			}
-			break;
-		case left:
-			if (playerMapPos.x - 1 >= 0 &&
-				mapData[playerMapPos.y][playerMapPos.x - 1] != MAP_NUM::WALL) {
-				playerMapPos.x--;
-				playerMoved = true;
-			}
-			break;
-		case right:
-			if (playerMapPos.x + 1 <= mapData[0].size() - 1 &&
-				mapData[playerMapPos.y][playerMapPos.x + 1] != MAP_NUM::WALL) {
-				playerMapPos.x++;
-				playerMoved = true;
-			}
-			break;
-		}
-
-		// 移動するなら
-		if (playerMoved) {
-			// パーティクル開始
-			createParticleFlag = true;
-			// 移動後の座標を反映
-			playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
-										   playerObj->position.y,
-										   playerMapPos.y * -mapSide);
+		// ミスしたら
+		if (missFlag) {
+			combo = 0U;
+			missFlag = false;
 		}
 	}
-
 #pragma endregion プレイヤー移動
 
 #pragma region パーティクル
@@ -501,12 +525,17 @@ void PlayScene::update() {
 		constexpr UINT particleNumMax = 50U, particleNumMin = 20U;
 		UINT particleNum = particleNumMin;
 
-		float startScale = 5.f;
-		// todo コンボ数(未実装)に応じて派手にする
-		if (input->hitKey(DIK_U)) {
-			particleNum = particleNumMax;
-			startScale = 10.f;
-		}
+		constexpr float scaleMin = 1.f, scaleMax = 10.f;
+		constexpr UINT maxCombo = 20U;
+		float startScale = scaleMin;
+
+		auto nowComboRaito = (float)combo / maxCombo;
+		if (nowComboRaito >= 1.f) nowComboRaito = 1.f;
+		else if (nowComboRaito <= 0.f) nowComboRaito = 0.f;
+
+		// コンボ数に応じて派手にする[0~20]
+		particleNum += (particleNumMax - particleNumMin) * nowComboRaito;
+		startScale += (scaleMax - scaleMin) * nowComboRaito;
 
 		createParticle(playerObj->position, particleNum, startScale);
 
