@@ -465,55 +465,65 @@ void PlayScene::update() {
 				moveDir = DIK_RIGHT;
 			}
 
-			auto nowMovableRoad = MAP_NUM::FRONT_ROAD;
-			if (frontBeatFlag == false) {
-				nowMovableRoad = MAP_NUM::BACK_ROAD;
+			// 今移動可能な道の種類
+			auto nowMovableRoad = MAP_NUM::BACK_ROAD;
+			if (frontBeatFlag) {
+				nowMovableRoad = MAP_NUM::FRONT_ROAD;
 			}
 
-			// 押した方向に移動できるなら、移動後のマップ座標を記録
+			// 移動後の種類を記録
+			MAP_NUM nextMapNum = MAP_NUM::UNDEF;	// 移動後のマップの種類格納用
+			auto nextPlayerMapPos = playerMapPos;	// 移動後のプレイヤーのマップ座標格納用
+
+			// 移動先のマップの種類を記録し、移動後のプレイヤーのマップ座標を記録
 			switch (moveDir) {
 			case DIK_UP:
-				if (playerMapPos.y - 1 >= 0 &&
-					mapData[playerMapPos.y - 1][playerMapPos.x] == nowMovableRoad) {
-					playerMapPos.y--;
-					playerMoved = true;
+				if (playerMapPos.y - 1 >= 0) {
+					nextMapNum = mapData[playerMapPos.y - 1][playerMapPos.x];
+					nextPlayerMapPos.y--;
 				}
 				break;
 			case DIK_DOWN:
-				if (playerMapPos.y + 1 <= mapData.size() - 1 &&
-					mapData[playerMapPos.y + 1][playerMapPos.x] == nowMovableRoad) {
-					playerMapPos.y++;
-					playerMoved = true;
+				if (playerMapPos.y + 1 <= mapData.size() - 1) {
+					nextMapNum = mapData[playerMapPos.y + 1][playerMapPos.x];
+					nextPlayerMapPos.y++;
 				}
 				break;
 			case DIK_LEFT:
-				if (playerMapPos.x - 1 >= 0 &&
-					mapData[playerMapPos.y][playerMapPos.x - 1] == nowMovableRoad) {
-					playerMapPos.x--;
-					playerMoved = true;
+				if (playerMapPos.x - 1 >= 0) {
+					nextMapNum = mapData[playerMapPos.y][playerMapPos.x - 1];
+					nextPlayerMapPos.x--;
 				}
 				break;
 			case DIK_RIGHT:
-				if (playerMapPos.x + 1 <= mapData[0].size() - 1 &&
-					mapData[playerMapPos.y][playerMapPos.x + 1] == nowMovableRoad) {
-					playerMapPos.x++;
-					playerMoved = true;
+				if (playerMapPos.x + 1 <= mapData[0].size() - 1) {
+					nextMapNum = mapData[playerMapPos.y][playerMapPos.x + 1];
+					nextPlayerMapPos.x++;
 				}
 				break;
 			}
 
-			// 移動するなら
-			if (playerMoved) {
-				// パーティクル開始
-				createParticleFlag = true;
-				// コンボ数加算
-				if (combo < UINT_MAX) combo++;
+			// 移動可能なら移動する
+			if (nextMapNum != MAP_NUM::UNDEF
+			   &&
+			   nextMapNum == nowMovableRoad) {
+				// 移動したことを記録
+				playerMoved = true;
+				// 移動後のマップ座標を反映
+				playerMapPos = nextPlayerMapPos;
 				// 移動後の座標を反映
 				playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
 											   playerObj->position.y,
 											   playerMapPos.y * -mapSide);
-			} else if (moveDir == DIK_UP || moveDir == DIK_DOWN ||
-					 moveDir == DIK_LEFT || moveDir == DIK_RIGHT) {
+				// パーティクル開始
+				createParticleFlag = true;
+				// コンボ数加算
+				if (combo < UINT_MAX) combo++;
+
+			}
+
+			// 入力はあったが移動しなかったなら
+			if (playerMoved == false) {
 				// 押したが移動しなかった = ミス
 				missFlag = true;
 			}
@@ -524,7 +534,7 @@ void PlayScene::update() {
 
 		// ミスしたら
 		if (missFlag && preMissFlag) {
-			combo = 0U;
+			combo = 0U;	// コンボをリセット
 			missFlag = false;
 			preMissFlag = false;
 		}
