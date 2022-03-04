@@ -185,6 +185,7 @@ void PlayScene::init() {
 	constexpr XMFLOAT4 wallCol = XMFLOAT4(0.5f, 0.3f, 0, 1);
 	constexpr XMFLOAT4 backRoadCol = XMFLOAT4(1, 0, 1, 1);
 	constexpr XMFLOAT4 frontRoadCol = XMFLOAT4(0, 1, 1, 1);
+	constexpr XMFLOAT4 goalCol = XMFLOAT4(1, 0, 0, 1);
 
 	for (UINT y = 0; y < mapFileData.size(); y++) {
 		mapData.emplace_back();
@@ -199,6 +200,8 @@ void PlayScene::init() {
 				mapData[y][x] = MAP_NUM::FRONT_ROAD;
 			} else if (chip == "3") {
 				mapData[y][x] = MAP_NUM::BACK_ROAD;
+			} else if (chip == "4") {
+				mapData[y][x] = MAP_NUM::GOAL;
 			} else {
 				mapData[y][x] = MAP_NUM::UNDEF;
 			}
@@ -236,6 +239,9 @@ void PlayScene::init() {
 				break;
 			case MAP_NUM::BACK_ROAD:
 				mapObj[y][x].color = backRoadCol;
+				break;
+			case MAP_NUM::GOAL:
+				mapObj[y][x].color = goalCol;
 				break;
 			default:
 				mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
@@ -276,10 +282,11 @@ void PlayScene::init() {
 
 void PlayScene::update() {
 
-	// SPACEでENDシーンへ
-	if (input->triggerKey(DIK_SPACE)) {
-		SceneManager::getInstange()->changeScene(SCENE_NUM::END);
-	}
+	//// SPACEでENDシーンへ
+	//if (input->triggerKey(DIK_SPACE)) {
+	//	SceneManager::getInstange()->changeScene(SCENE_NUM::END);
+	//}
+
 
 #pragma region マウス
 
@@ -506,7 +513,7 @@ void PlayScene::update() {
 			// 移動可能なら移動する
 			if (nextMapNum != MAP_NUM::UNDEF
 			   &&
-			   nextMapNum == nowMovableRoad) {
+			  (nextMapNum == nowMovableRoad || nextMapNum == MAP_NUM::GOAL)) {
 				// 移動したことを記録
 				playerMoved = true;
 				// 移動後のマップ座標を反映
@@ -515,6 +522,10 @@ void PlayScene::update() {
 				playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
 											   playerObj->position.y,
 											   playerMapPos.y * -mapSide);
+
+				if (nextMapNum == MAP_NUM::GOAL) {
+					SceneManager::getInstange()->changeScene(SCENE_NUM::END);
+				}
 				// パーティクル開始
 				createParticleFlag = true;
 				// コンボ数加算
