@@ -129,7 +129,7 @@ void PlayScene::init() {
 #pragma region 音
 
 	soundCommon.reset(new Sound::SoundCommon());
-	soundData1.reset(new Sound("Resources/Music/mmc_140_BGM1.wav", soundCommon.get()));
+	soundData1.reset(new Sound("Resources/Music/mmc_125_BGM2.wav", soundCommon.get()));
 
 	particleSE.reset(new Sound("Resources/SE/Sys_Set03-click.wav", soundCommon.get()));
 
@@ -214,13 +214,15 @@ void PlayScene::init() {
 						  WinAPI::window_width, WinAPI::window_height,
 						  Object3d::constantBufferNum, obj3dTexNum));
 
+	constexpr float mapPosY = -150.f;
+
 	for (UINT y = 0; y < mapData.size(); y++) {
 		mapObj.emplace_back();
 		for (UINT x = 0; x < mapData[y].size(); x++) {
 			mapObj[y].emplace_back(Object3d(DirectXCommon::getInstance()->getDev(), model.get(), obj3dTexNum));
 			mapObj[y][x].scale = XMFLOAT3(obj3dScale, obj3dScale, obj3dScale);
 			mapObj[y][x].position = XMFLOAT3(x * mapSide,
-											 -100,
+											 mapPosY,
 											 y * -mapSide);
 
 			switch (mapData[y][x]) {
@@ -324,7 +326,7 @@ void PlayScene::update() {
 
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 16, 1.f,
 						  XMFLOAT4(1, 1, 1, 1),
-						  "beat : %u", beatChangeNum);
+						  "half beat : %u", beatChangeNum);
 
 #pragma endregion 時間
 
@@ -386,6 +388,13 @@ void PlayScene::update() {
 		} else if (input->hitKey(DIK_D)) {
 			camera->moveRight(moveSpeed);
 		}
+
+		XMFLOAT3 camPos = camera->getEye();
+		camPos.x = playerObj->position.x;
+		camPos.z = playerObj->position.z;
+		camera->setEye(camPos);
+		camera->setTarget(playerObj->position);
+		camera->setUp(XMFLOAT3(0, 0, 1));
 	}
 
 #pragma endregion カメラ移動回転
@@ -394,7 +403,7 @@ void PlayScene::update() {
 
 	{
 		const auto nowTime = timer->getNowTime();	// 今の時間
-		constexpr float bpm = 140;	// beat / min 毎分何拍か
+		constexpr float bpm = 125 * 2;	// beat / min 毎分何拍か(表裏)
 		const auto oneBeatTime = timer->getOneBeatTime(bpm);	// 一拍の時間を記録
 
 		constexpr float aheadJudgeRange = 0.25f;	// この値分次の拍の始まりが速くなる[0~1]
@@ -403,28 +412,28 @@ void PlayScene::update() {
 		if (nowTime >= oneBeatTime * (beatChangeNum + 1) - oneBeatTime * aheadJudgeRange) {
 			beatChangeNum++;
 			beatChangeTime = nowTime;	// 今の時間を記録
+			frontBeatFlag = !frontBeatFlag;	// 表迫と裏拍をchange
 
 			if (playerMoved) {
 				playerMoved = false;
-			} else combo = 0U;
+			} //else combo = 0U;	// 止まっていたらコンボをリセット
 		}
 		debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1.f,
 							  XMFLOAT4(1, 1, 1, 1),
 							  "%u combo", combo);
 
 		const float beatRaito = (nowTime - beatChangeTime) / (float)oneBeatTime;	// 今の拍の進行度[0~1]
+		constexpr float movableRaitoMin = 0.625f, movableRaitoMax = 1.f - aheadJudgeRange;	// 移動できない時間の範囲
 
 		// この範囲内なら移動はできない
-		if (0.5f < beatRaito && beatRaito < 1.f - aheadJudgeRange) {
-			movableFlag = false;
-		} else movableFlag = true;
+		movableFlag = !(movableRaitoMin < beatRaito&& beatRaito < movableRaitoMax);
 
-		debugText.Print(spriteCommon, "O    N\nK    G", 0, debugText.fontHeight,
+		debugText.Print(spriteCommon, "O         N\nK         G", 0, debugText.fontHeight,
 						1.f, XMFLOAT4(1, 1, 1, 0.5f));
 
 		debugText.Print(spriteCommon,
 						movableFlag == true ? "O\nK" : "N\nG",
-						beatRaito * 5.f * debugText.fontWidth, debugText.fontHeight,
+						beatRaito * 10.f * debugText.fontWidth, debugText.fontHeight,
 						1.f,
 						XMFLOAT4(1, (float)movableFlag, 1, 1));
 
@@ -434,74 +443,87 @@ void PlayScene::update() {
 
 
 #pragma region プレイヤー移動
+	preMissFlag = missFlag;
+
 	// 移動の入力があったら
 	if (input->triggerKey(DIK_UP) || input->triggerKey(DIK_DOWN) ||
 		   input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_RIGHT)) {
 
 		// 移動可能なら
 		if (playerMoved == false && movableFlag) {
-			constexpr uint8_t up = 0b0001u;
-			constexpr uint8_t down = 0b0010u;
-			constexpr uint8_t left = 0b0100u;
-			constexpr uint8_t right = 0b1000u;
 
 			uint8_t moveDir = 0u;
 
 			// 押した方向を記録
 			if (input->triggerKey(DIK_UP)) {
-				moveDir = up;
+				moveDir = DIK_UP;
 			} else if (input->triggerKey(DIK_DOWN)) {
-				moveDir = down;
+				moveDir = DIK_DOWN;
 			} else if (input->triggerKey(DIK_LEFT)) {
-				moveDir = left;
+				moveDir = DIK_LEFT;
 			} else if (input->triggerKey(DIK_RIGHT)) {
-				moveDir = right;
+				moveDir = DIK_RIGHT;
 			}
 
-			// 押した方向に移動できるなら、移動後のマップ座標を記録
+			// 今移動可能な道の種類
+			auto nowMovableRoad = MAP_NUM::BACK_ROAD;
+			if (frontBeatFlag) {
+				nowMovableRoad = MAP_NUM::FRONT_ROAD;
+			}
+
+			// 移動後の種類を記録
+			MAP_NUM nextMapNum = MAP_NUM::UNDEF;	// 移動後のマップの種類格納用
+			auto nextPlayerMapPos = playerMapPos;	// 移動後のプレイヤーのマップ座標格納用
+
+			// 移動先のマップの種類を記録し、移動後のプレイヤーのマップ座標を記録
 			switch (moveDir) {
-			case up:
-				if (playerMapPos.y - 1 >= 0 &&
-					mapData[playerMapPos.y - 1][playerMapPos.x] != MAP_NUM::WALL) {
-					playerMapPos.y--;
-					playerMoved = true;
+			case DIK_UP:
+				if (playerMapPos.y - 1 >= 0) {
+					nextMapNum = mapData[playerMapPos.y - 1][playerMapPos.x];
+					nextPlayerMapPos.y--;
 				}
 				break;
-			case down:
-				if (playerMapPos.y + 1 <= mapData.size() - 1 &&
-					mapData[playerMapPos.y + 1][playerMapPos.x] != MAP_NUM::WALL) {
-					playerMapPos.y++;
-					playerMoved = true;
+			case DIK_DOWN:
+				if (playerMapPos.y + 1 <= mapData.size() - 1) {
+					nextMapNum = mapData[playerMapPos.y + 1][playerMapPos.x];
+					nextPlayerMapPos.y++;
 				}
 				break;
-			case left:
-				if (playerMapPos.x - 1 >= 0 &&
-					mapData[playerMapPos.y][playerMapPos.x - 1] != MAP_NUM::WALL) {
-					playerMapPos.x--;
-					playerMoved = true;
+			case DIK_LEFT:
+				if (playerMapPos.x - 1 >= 0) {
+					nextMapNum = mapData[playerMapPos.y][playerMapPos.x - 1];
+					nextPlayerMapPos.x--;
 				}
 				break;
-			case right:
-				if (playerMapPos.x + 1 <= mapData[0].size() - 1 &&
-					mapData[playerMapPos.y][playerMapPos.x + 1] != MAP_NUM::WALL) {
-					playerMapPos.x++;
-					playerMoved = true;
+			case DIK_RIGHT:
+				if (playerMapPos.x + 1 <= mapData[0].size() - 1) {
+					nextMapNum = mapData[playerMapPos.y][playerMapPos.x + 1];
+					nextPlayerMapPos.x++;
 				}
 				break;
 			}
 
-			// 移動するなら
-			if (playerMoved) {
-				// パーティクル開始
-				createParticleFlag = true;
-				// コンボ数加算
-				combo++;
+			// 移動可能なら移動する
+			if (nextMapNum != MAP_NUM::UNDEF
+			   &&
+			   nextMapNum == nowMovableRoad) {
+				// 移動したことを記録
+				playerMoved = true;
+				// 移動後のマップ座標を反映
+				playerMapPos = nextPlayerMapPos;
 				// 移動後の座標を反映
 				playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
 											   playerObj->position.y,
 											   playerMapPos.y * -mapSide);
-			} else if (moveDir == up || moveDir == down ||
-					 moveDir == left || moveDir == right) {
+				// パーティクル開始
+				createParticleFlag = true;
+				// コンボ数加算
+				if (combo < UINT_MAX) combo++;
+
+			}
+
+			// 入力はあったが移動しなかったなら
+			if (playerMoved == false) {
 				// 押したが移動しなかった = ミス
 				missFlag = true;
 			}
@@ -511,9 +533,10 @@ void PlayScene::update() {
 		}
 
 		// ミスしたら
-		if (missFlag) {
-			combo = 0U;
+		if (missFlag && preMissFlag) {
+			combo = 0U;	// コンボをリセット
 			missFlag = false;
+			preMissFlag = false;
 		}
 	}
 #pragma endregion プレイヤー移動

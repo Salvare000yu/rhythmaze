@@ -94,9 +94,12 @@ class PlayScene :
 #pragma endregion 3Dオブジェクト
 
 	bool missFlag = false;
+	bool preMissFlag = false;
 
 	UINT combo = 0U;
 	bool movableFlag = true;
+
+	bool frontBeatFlag = true;
 
 	bool playerMoved = false;
 	bool createParticleFlag = false;
