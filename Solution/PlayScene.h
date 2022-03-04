@@ -25,6 +25,7 @@ enum class MAP_NUM : unsigned short {
 	WALL,		// •Ç
 	FRONT_ROAD,	// •\”—‚Ì“¹
 	BACK_ROAD,	// — ”‚Ì“¹
+	GOAL
 };
 
 class PlayScene :
