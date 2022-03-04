@@ -390,10 +390,6 @@ void PlayScene::update() {
 		}
 
 		XMFLOAT3 camPos = camera->getEye();
-		char tmp[32]{};
-		snprintf(tmp, 32, "%f, ", camPos.y);
-		OutputDebugStringA(tmp);
-
 		camPos.x = playerObj->position.x;
 		camPos.z = playerObj->position.z;
 		camera->setEye(camPos);
@@ -427,10 +423,10 @@ void PlayScene::update() {
 							  "%u combo", combo);
 
 		const float beatRaito = (nowTime - beatChangeTime) / (float)oneBeatTime;	// 今の拍の進行度[0~1]
-		constexpr float unmovableRaitoMin = 0.625f, unmovableRaitoMax = 1.f - aheadJudgeRange;	// 移動できない時間の範囲
+		constexpr float movableRaitoMin = 0.625f, movableRaitoMax = 1.f - aheadJudgeRange;	// 移動できない時間の範囲
 
 		// この範囲内なら移動はできない
-		movableFlag = !(unmovableRaitoMin < beatRaito&& beatRaito < unmovableRaitoMax);
+		movableFlag = !(movableRaitoMin < beatRaito&& beatRaito < movableRaitoMax);
 
 		debugText.Print(spriteCommon, "O         N\nK         G", 0, debugText.fontHeight,
 						1.f, XMFLOAT4(1, 1, 1, 0.5f));
@@ -455,22 +451,18 @@ void PlayScene::update() {
 
 		// 移動可能なら
 		if (playerMoved == false && movableFlag) {
-			constexpr uint8_t up = 0b0001u;
-			constexpr uint8_t down = 0b0010u;
-			constexpr uint8_t left = 0b0100u;
-			constexpr uint8_t right = 0b1000u;
 
 			uint8_t moveDir = 0u;
 
 			// 押した方向を記録
 			if (input->triggerKey(DIK_UP)) {
-				moveDir = up;
+				moveDir = DIK_UP;
 			} else if (input->triggerKey(DIK_DOWN)) {
-				moveDir = down;
+				moveDir = DIK_DOWN;
 			} else if (input->triggerKey(DIK_LEFT)) {
-				moveDir = left;
+				moveDir = DIK_LEFT;
 			} else if (input->triggerKey(DIK_RIGHT)) {
-				moveDir = right;
+				moveDir = DIK_RIGHT;
 			}
 
 			auto nowMovableRoad = MAP_NUM::FRONT_ROAD;
@@ -480,28 +472,28 @@ void PlayScene::update() {
 
 			// 押した方向に移動できるなら、移動後のマップ座標を記録
 			switch (moveDir) {
-			case up:
+			case DIK_UP:
 				if (playerMapPos.y - 1 >= 0 &&
 					mapData[playerMapPos.y - 1][playerMapPos.x] == nowMovableRoad) {
 					playerMapPos.y--;
 					playerMoved = true;
 				}
 				break;
-			case down:
+			case DIK_DOWN:
 				if (playerMapPos.y + 1 <= mapData.size() - 1 &&
 					mapData[playerMapPos.y + 1][playerMapPos.x] == nowMovableRoad) {
 					playerMapPos.y++;
 					playerMoved = true;
 				}
 				break;
-			case left:
+			case DIK_LEFT:
 				if (playerMapPos.x - 1 >= 0 &&
 					mapData[playerMapPos.y][playerMapPos.x - 1] == nowMovableRoad) {
 					playerMapPos.x--;
 					playerMoved = true;
 				}
 				break;
-			case right:
+			case DIK_RIGHT:
 				if (playerMapPos.x + 1 <= mapData[0].size() - 1 &&
 					mapData[playerMapPos.y][playerMapPos.x + 1] == nowMovableRoad) {
 					playerMapPos.x++;
@@ -520,8 +512,8 @@ void PlayScene::update() {
 				playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
 											   playerObj->position.y,
 											   playerMapPos.y * -mapSide);
-			} else if (moveDir == up || moveDir == down ||
-					 moveDir == left || moveDir == right) {
+			} else if (moveDir == DIK_UP || moveDir == DIK_DOWN ||
+					 moveDir == DIK_LEFT || moveDir == DIK_RIGHT) {
 				// 押したが移動しなかった = ミス
 				missFlag = true;
 			}
