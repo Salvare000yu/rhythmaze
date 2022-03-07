@@ -3,6 +3,8 @@
 #include "TitleScene.h"
 #include "PlayScene.h"
 #include "EndScene.h"
+#include "StageSelect.h"
+#include "Explanation.h"
 
 #include "Input.h"
 
@@ -41,6 +43,12 @@ void SceneManager::update() {
 			break;
 		case SCENE_NUM::END:
 			nowScene = new EndScene();
+			break;
+		case SCENE_NUM::SELECT:
+			nowScene = new StageSelect();
+			break;
+		case SCENE_NUM::EXPLANATION:
+			nowScene = new Explanation();
 			break;
 		}
 

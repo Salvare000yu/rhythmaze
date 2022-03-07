@@ -5,8 +5,6 @@
 #include "WinAPI.h"
 
 void EndScene::init() {
-	WinAPI::getInstance()->setWindowText("Press SPACE to change scene - now : End");
-
 	input = Input::getInstance();
 
 	spCom = Sprite::createSpriteCommon(DirectXCommon::getInstance()->getDev(),
@@ -26,6 +24,7 @@ void EndScene::update() {
 	}
 
 	debugText.Print(spCom, "END", 0, 0, 10.f);
+	debugText.Print(spCom, "SPACE : back Title", 0, WinAPI::window_height / 2);
 }
 
 void EndScene::draw() {

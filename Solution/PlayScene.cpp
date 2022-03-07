@@ -111,7 +111,7 @@ namespace {
 }
 
 void PlayScene::init() {
-	WinAPI::getInstance()->setWindowText("Press SPACE to change scene - now : Play (SE : OtoLogic)");
+	WinAPI::getInstance()->setWindowText("リズメイズ (SE : OtoLogic)");
 
 	dxCom = DirectXCommon::getInstance();
 
@@ -344,16 +344,8 @@ void PlayScene::update() {
 		if (input->hitKey(DIK_LSHIFT)) debugText.tabSize = 4U;
 	}
 
-	debugText.Print(spriteCommon, "P : create particle(play SE)", 0, debugText.fontHeight * 4);
-
-	debugText.formatPrint(spriteCommon, debugText.fontWidth * 2, debugText.fontHeight * 17, 1.f,
-						  XMFLOAT4(1, 1, 1, 1),
-						  "newLine\ntab(size %u)\tendString", debugText.tabSize);
-
-	debugText.Print(spriteCommon, "SPACE : end", 0, debugText.fontHeight * 6, 1.f, XMFLOAT4(1, 0.5f, 0.5f, 1));
-
-	debugText.Print(spriteCommon, "WASD : move camera", 0, debugText.fontHeight * 8);
-	debugText.Print(spriteCommon, "IJKL : rotation camera & move UI", 0, debugText.fontHeight * 9);
+	debugText.Print(spriteCommon, "WS : move camera", 0, debugText.fontHeight * 8);
+	debugText.Print(spriteCommon, "IJKL : move UI", 0, debugText.fontHeight * 9);
 
 #pragma endregion 情報表示
 
