@@ -7,7 +7,7 @@
 #include "Looper.h"
 
 System::System() {
-	constexpr LPCSTR window_title = "DirectXクラス化";
+	constexpr LPCSTR window_title = "リズメイズ";
 	WinAPI::getInstance()->setWindowText(window_title);
 }
 

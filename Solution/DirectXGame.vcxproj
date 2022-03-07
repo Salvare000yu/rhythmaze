@@ -148,6 +148,7 @@
     <ClCompile Include="DebugText.cpp" />
     <ClCompile Include="DirectXCommon.cpp" />
     <ClCompile Include="EndScene.cpp" />
+    <ClCompile Include="Explanation.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Looper.cpp" />
@@ -162,6 +163,7 @@
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="StageSelect.cpp" />
     <ClCompile Include="System.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="TitleScene.cpp" />
@@ -179,6 +181,7 @@
     <ClInclude Include="DebugText.h" />
     <ClInclude Include="DirectXCommon.h" />
     <ClInclude Include="EndScene.h" />
+    <ClInclude Include="Explanation.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Looper.h" />
@@ -192,6 +195,7 @@
     <ClInclude Include="Sound.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="StageSelect.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="TitleScene.h" />
