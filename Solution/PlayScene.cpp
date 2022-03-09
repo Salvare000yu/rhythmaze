@@ -446,7 +446,7 @@ void PlayScene::update() {
 											   playerMapPos.y * -mapSide);
 
 				if (nextMapNum == MAP_NUM::GOAL) {
-					SceneManager::getInstange()->changeScene(SCENE_NUM::END);
+					SceneManager::getInstange()->goal(beatChangeNum);
 				}
 				// パーティクル開始
 				createParticleFlag = true;

@@ -17,6 +17,8 @@ private:
 	GameScene* nowScene = nullptr;
 	SCENE_NUM nextScene;
 
+	unsigned clearHalfBeat = 0u;
+
 public:
 	// https://dixq.net/g/sp_06.html
 	// «SceneMgr.h«@ƒV[ƒ“ŠÇ—•”
@@ -29,5 +31,8 @@ public:
 	void fin() override;
 
 	void changeScene(const SCENE_NUM nextScene);
+	void goal(const unsigned clearHalfBeat);
+
+	inline unsigned getClearHalfBeat() const { return clearHalfBeat; }
 };
 

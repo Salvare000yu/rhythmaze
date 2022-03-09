@@ -75,3 +75,8 @@ void SceneManager::fin() {
 void SceneManager::changeScene(const SCENE_NUM nextScene) {
 	this->nextScene = nextScene;
 }
+
+void SceneManager::goal(const unsigned clearHalfBeat) {
+	this->clearHalfBeat = clearHalfBeat;
+	changeScene(SCENE_NUM::END);
+}

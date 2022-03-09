@@ -25,6 +25,11 @@ void EndScene::update() {
 
 	debugText.Print(spCom, "END", 0, 0, 10.f);
 	debugText.Print(spCom, "SPACE : back Stage select", 0, WinAPI::window_height / 2);
+
+	debugText.formatPrint(spCom, 0, WinAPI::window_height / 2 + debugText.fontHeight * 2, 1.f,
+						  DirectX::XMFLOAT4(1, 1, 1, 1),
+						  "clear half beat : %u",
+						  SceneManager::getInstange()->getClearHalfBeat());
 }
 
 void EndScene::draw() {
