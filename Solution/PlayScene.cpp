@@ -129,7 +129,7 @@ void PlayScene::init() {
 #pragma region 音
 
 	soundCommon.reset(new Sound::SoundCommon());
-	soundData1.reset(new Sound("Resources/Music/mmc_125_BGM2.wav", soundCommon.get()));
+	bgm.reset(new Sound("Resources/Music/mmc_125_BGM2.wav", soundCommon.get()));
 
 	particleSE.reset(new Sound("Resources/SE/Sys_Set03-click.wav", soundCommon.get()));
 
@@ -274,80 +274,13 @@ void PlayScene::init() {
 	// パーティクル初期化
 	particleMgr.reset(new ParticleManager(dxCom->getDev(), L"Resources/effect1.png", camera.get()));
 
-	Sound::SoundPlayWave(soundCommon.get(), soundData1.get(), XAUDIO2_LOOP_INFINITE);
+	Sound::SoundPlayWave(soundCommon.get(), bgm.get(), XAUDIO2_LOOP_INFINITE);
 
 	// 時間初期化
 	timer.reset(new Time());
 }
 
 void PlayScene::update() {
-
-	//// SPACEでENDシーンへ
-	//if (input->triggerKey(DIK_SPACE)) {
-	//	SceneManager::getInstange()->changeScene(SCENE_NUM::END);
-	//}
-
-
-#pragma region マウス
-
-	if (input->hitMouseBotton(Input::MOUSE::LEFT)) {
-		debugText.Print(spriteCommon, "input mouse left",
-		input->getMousePos().x, input->getMousePos().y, 0.75f);
-	}
-	if (input->hitMouseBotton(Input::MOUSE::RIGHT)) {
-		debugText.Print(spriteCommon, "input mouse right",
-		input->getMousePos().x,
-		input->getMousePos().y + debugText.fontHeight, 0.75f);
-	}
-	if (input->hitMouseBotton(Input::MOUSE::WHEEL)) {
-		debugText.Print(spriteCommon, "input mouse wheel",
-		input->getMousePos().x,
-		input->getMousePos().y + debugText.fontHeight * 2, 0.75f);
-	}
-	if (input->hitMouseBotton(VK_LSHIFT)) {
-		debugText.Print(spriteCommon, "LSHIFT(WinAPI)", 0, 0, 2);
-	}
-
-	// Rを押すたびマウスカーソルの表示非表示を切り替え
-	if (input->triggerKey(DIK_R)) {
-		static bool mouseDispFlag = true;
-		mouseDispFlag = !mouseDispFlag;
-		input->changeDispMouseCursorFlag(mouseDispFlag);
-	}
-
-	// Mキーでマウスカーソル位置を0,0に移動
-	if (input->triggerKey(DIK_M)) {
-		input->setMousePos(0, 0);
-	}
-
-#pragma endregion マウス
-
-#pragma region 時間
-
-	debugText.formatPrint(spriteCommon, 0, 0, 1.f,
-						  XMFLOAT4(1, 1, 1, 1), "FPS : %f", dxCom->getFPS());
-
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 15, 1.f,
-						  XMFLOAT4(1, 1, 1, 1),
-						  "Time : %.6f[s]", (long double)timer->getNowTime() / Time::oneSec);
-
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 16, 1.f,
-						  XMFLOAT4(1, 1, 1, 1),
-						  "half beat : %u", beatChangeNum);
-
-#pragma endregion 時間
-
-#pragma region 情報表示
-
-	if (input->triggerKey(DIK_T)) {
-		debugText.tabSize++;
-		if (input->hitKey(DIK_LSHIFT)) debugText.tabSize = 4U;
-	}
-
-	debugText.Print(spriteCommon, "WS : move camera", 0, debugText.fontHeight * 8);
-	debugText.Print(spriteCommon, "IJKL : move UI", 0, debugText.fontHeight * 9);
-
-#pragma endregion 情報表示
 
 #pragma region カメラ移動回転
 
@@ -417,9 +350,6 @@ void PlayScene::update() {
 				playerMoved = false;
 			} //else combo = 0U;	// 止まっていたらコンボをリセット
 		}
-		debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1.f,
-							  XMFLOAT4(1, 1, 1, 1),
-							  "%u combo", combo);
 
 		const float beatRaito = (nowTime - beatChangeTime) / (float)oneBeatTime;	// 今の拍の進行度[0~1]
 		constexpr float movableRaitoMin = 0.625f, movableRaitoMax = 1.f - aheadJudgeRange;	// 移動できない時間の範囲
@@ -587,12 +517,30 @@ void PlayScene::update() {
 	}
 #pragma endregion ライト
 
-#pragma region スプライト
 
-	if (input->hitKey(DIK_I)) sprites[0].position.y -= 10; else if (input->hitKey(DIK_K)) sprites[0].position.y += 10;
-	if (input->hitKey(DIK_J)) sprites[0].position.x -= 10; else if (input->hitKey(DIK_L)) sprites[0].position.x += 10;
 
-#pragma endregion スプライト
+#pragma region 情報表示
+	constexpr auto dbFontCol = XMFLOAT4(1, 1, 1, 1);
+
+
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1.f,
+						  dbFontCol,
+						  "%u combo", combo);
+
+	debugText.formatPrint(spriteCommon, 0, 0, 1.f,
+						  dbFontCol, "FPS : %f", dxCom->getFPS());
+
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 15, 1.f,
+						  dbFontCol,
+						  "Time : %.6f[s]", (long double)timer->getNowTime() / Time::oneSec);
+
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 16, 1.f,
+						  dbFontCol,
+						  "half beat : %u", beatChangeNum);
+
+	debugText.Print(spriteCommon, "WS : move camera", 0, debugText.fontHeight * 8);
+
+#pragma endregion 情報表示
 
 	camera->update();
 }
@@ -601,9 +549,6 @@ void PlayScene::draw() {
 	// ４．描画コマンドここから
 	// 3Dオブジェクトコマンド
 	Object3d::startDraw(dxCom->getCmdList(), object3dPipelineSet);
-	//for (UINT i = 0; i < obj3d.size(); i++) {
-	//	//obj3d[i].drawWithUpdate(camera->getViewMatrix(), dxCom);
-	//}
 	for (UINT y = 0; y < mapData.size(); y++) {
 		for (UINT x = 0; x < mapData[y].size(); x++) {
 			mapObj[y][x].drawWithUpdate(camera->getViewMatrix(), dxCom);
@@ -618,9 +563,9 @@ void PlayScene::draw() {
 	// スプライト共通コマンド
 	Sprite::drawStart(spriteCommon, dxCom->getCmdList());
 	// スプライト描画
-	for (UINT i = 0; i < _countof(sprites); i++) {
+	/*for (UINT i = 0; i < _countof(sprites); i++) {
 		sprites[i].drawWithUpdate(dxCom, spriteCommon);
-	}
+	}*/
 	// デバッグテキスト描画
 	debugText.DrawAll(dxCom, spriteCommon);
 	// ４．描画コマンドここまで

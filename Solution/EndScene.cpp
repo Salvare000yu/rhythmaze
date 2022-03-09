@@ -20,11 +20,11 @@ void EndScene::init() {
 
 void EndScene::update() {
 	if (input->triggerKey(DIK_SPACE)) {
-		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
+		SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
 	}
 
 	debugText.Print(spCom, "END", 0, 0, 10.f);
-	debugText.Print(spCom, "SPACE : back Title", 0, WinAPI::window_height / 2);
+	debugText.Print(spCom, "SPACE : back Stage select", 0, WinAPI::window_height / 2);
 }
 
 void EndScene::draw() {

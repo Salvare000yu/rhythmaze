@@ -22,7 +22,7 @@ void TitleScene::update() {
 	if (input->triggerKey(DIK_SPACE)) {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
 	}
-	debugText.Print(spCom, "TITLE", 0, 0, 10.f);
+	debugText.Print(spCom, "RHYTHMAZE", 0, 0, 7.5f);
 	debugText.Print(spCom, "SPACE : stage select", 0, WinAPI::window_height / 2);
 }
 

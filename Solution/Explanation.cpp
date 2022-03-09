@@ -4,7 +4,7 @@
 
 #include "WinAPI.h"
 
-void Explanation::init(){
+void Explanation::init() {
 	input = Input::getInstance();
 
 	spCom = Sprite::createSpriteCommon(DirectXCommon::getInstance()->getDev(),
@@ -18,17 +18,17 @@ void Explanation::init(){
 		debugTextTexNumber, spCom);
 }
 
-void Explanation::update()
-{
+void Explanation::update() {
 	if (input->triggerKey(DIK_SPACE)) {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
 	}
 	debugText.Print(spCom, "EXPLANATION", 0, 0, 5.f);
-	debugText.Print(spCom, "SPACE : stage select", 0, WinAPI::window_height / 2);
+	debugText.Print(spCom,
+					"[SPACE : back stage select]\n\n[operation]\narrow(rhythmically) : move",
+					0, WinAPI::window_height / 2);
 }
 
-void Explanation::draw()
-{
+void Explanation::draw() {
 	Sprite::drawStart(spCom, DirectXCommon::getInstance()->getCmdList());
 	debugText.DrawAll(DirectXCommon::getInstance(), spCom);
 }
