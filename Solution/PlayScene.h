@@ -44,7 +44,7 @@ class PlayScene :
 
 	std::unique_ptr<Sound::SoundCommon> soundCommon;
 
-	std::unique_ptr<Sound> soundData1;
+	std::unique_ptr<Sound> bgm;
 
 	std::unique_ptr<Sound> particleSE;
 
