@@ -4,7 +4,7 @@
 
 #include "WinAPI.h"
 
-void StageSelect::init(){
+void StageSelect::init() {
 	input = Input::getInstance();
 
 	spCom = Sprite::createSpriteCommon(DirectXCommon::getInstance()->getDev(),
@@ -18,19 +18,19 @@ void StageSelect::init(){
 		debugTextTexNumber, spCom);
 }
 
-void StageSelect::update(){
+void StageSelect::update() {
 	if (input->triggerKey(DIK_SPACE)) {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::EXPLANATION);
-	}
-
-	if (input->triggerKey(DIK_RETURN)) {
+	} else if (input->triggerKey(DIK_RETURN)) {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::PLAY);
+	} else if (input->triggerKey(DIK_R)) {
+		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
 	}
 	debugText.Print(spCom, "SELECT", 0, 0, 10.f);
-	debugText.Print(spCom, "ENTER : PLAY\nSPACE : EXPLANATION", 0, WinAPI::window_height / 2);
+	debugText.Print(spCom, "ENTER : PLAY\nSPACE : EXPLANATION\n  R   : TITLE", 0, WinAPI::window_height / 2);
 }
 
-void StageSelect::draw(){
+void StageSelect::draw() {
 	Sprite::drawStart(spCom, DirectXCommon::getInstance()->getCmdList());
 	debugText.DrawAll(DirectXCommon::getInstance(), spCom);
 }
