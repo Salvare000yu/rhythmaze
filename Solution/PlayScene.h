@@ -95,7 +95,6 @@ class PlayScene :
 #pragma endregion 3Dオブジェクト
 
 	bool missFlag = false;
-	bool preMissFlag = false;
 
 	UINT combo = 0U;
 	bool movableFlag = true;
@@ -123,10 +122,18 @@ class PlayScene :
 
 	std::vector<std::vector<MAP_NUM>> mapData;
 
-	static const unsigned clearCount = 250u;
+	// --------------------
+	// クリア条件
+	// --------------------
+	const unsigned clearCount = 250u;
+	const unsigned clearCombo = 1u;
 
 private:
 	void createParticle(const DirectX::XMFLOAT3 pos, const UINT particleNum = 10U, const float startScale = 1.f);
+
+	// @return ゴール出来たらtrue
+	bool goal();
+	void timeOut();
 
 public:
 	void init() override;
