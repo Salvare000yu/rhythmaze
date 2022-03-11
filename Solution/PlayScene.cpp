@@ -372,11 +372,11 @@ void PlayScene::update() {
 
 
 #pragma region プレイヤー移動
-	preMissFlag = missFlag;
-
 	// 移動の入力があったら
 	if (input->triggerKey(DIK_UP) || input->triggerKey(DIK_DOWN) ||
 		   input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_RIGHT)) {
+
+		bool goalFlag = false;
 
 		// 移動可能なら
 		if (playerMoved == false && movableFlag) {
@@ -448,11 +448,10 @@ void PlayScene::update() {
 				if (combo < UINT_MAX) combo++;
 
 				if (nextMapNum == MAP_NUM::GOAL) {
-					SceneManager::getInstange()->goal(beatChangeNum, combo);
+					goalFlag = true;
 				}
 				// パーティクル開始
 				createParticleFlag = true;
-
 			}
 
 			// 入力はあったが移動しなかったなら
@@ -466,11 +465,12 @@ void PlayScene::update() {
 		}
 
 		// ミスしたら
-		if (missFlag && preMissFlag) {
+		if (missFlag) {
 			combo = 0U;	// コンボをリセット
 			missFlag = false;
-			preMissFlag = false;
 		}
+
+		if (goalFlag) goal();
 	}
 #pragma endregion プレイヤー移動
 
@@ -520,7 +520,7 @@ void PlayScene::update() {
 #pragma region 制限時間
 
 	if (beatChangeNum >= clearCount) {
-		SceneManager::getInstange()->goal(beatChangeNum, combo, false);
+		timeOut();
 	}
 
 #pragma endregion 制限時間
@@ -531,7 +531,7 @@ void PlayScene::update() {
 
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1.f,
 						  dbFontCol,
-						  "%u combo", combo);
+						  "%u combo / %u", combo, clearCombo);
 
 	debugText.formatPrint(spriteCommon, 0, 0, 1.f,
 						  dbFontCol, "FPS : %f", dxCom->getFPS());
@@ -622,4 +622,17 @@ void PlayScene::createParticle(const DirectX::XMFLOAT3 pos, const UINT particleN
 						 startRota, endRota,
 						 startCol, endCol);
 	}
+}
+
+bool PlayScene::goal() {
+	// コンボ数がクリア条件に達していたら
+	if (combo >= clearCombo) {
+		SceneManager::getInstange()->goal(beatChangeNum, combo, true);
+		return true;
+	}
+	return false;
+}
+
+void PlayScene::timeOut() {
+	SceneManager::getInstange()->goal(beatChangeNum, combo, false);
 }
