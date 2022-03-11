@@ -517,7 +517,13 @@ void PlayScene::update() {
 	}
 #pragma endregion ÉâÉCÉg
 
+#pragma region êßå¿éûä‘
 
+	if (beatChangeNum >= clearCount) {
+		SceneManager::getInstange()->goal(beatChangeNum, combo, false);
+	}
+
+#pragma endregion êßå¿éûä‘
 
 #pragma region èÓïÒï\é¶
 	constexpr auto dbFontCol = XMFLOAT4(1, 1, 1, 1);
@@ -536,7 +542,7 @@ void PlayScene::update() {
 
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 16, 1.f,
 						  dbFontCol,
-						  "count : %u", beatChangeNum);
+						  "count Remaining : %u / %u", clearCount - beatChangeNum, clearCount);
 
 	debugText.Print(spriteCommon, "WS : move camera", 0, debugText.fontHeight * 8);
 
