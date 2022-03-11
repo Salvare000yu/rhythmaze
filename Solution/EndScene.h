@@ -18,6 +18,8 @@ class EndScene :
 
 	Input* input = nullptr;
 
+	char clearinfiStr[64]{};
+
 public:
     void init() override;
     void update() override;

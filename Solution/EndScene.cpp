@@ -16,6 +16,18 @@ void EndScene::init() {
 	debugText.Initialize(DirectXCommon::getInstance()->getDev(),
 						 WinAPI::window_width, WinAPI::window_height,
 						debugTextTexNumber, spCom);
+
+	if (SceneManager::getInstange()->getAchieving()) {
+		snprintf(clearinfiStr, _countof(clearinfiStr),
+				 "clear count : %u\nclear combo : %u",
+				 SceneManager::getInstange()->getClearHalfBeat(),
+				 SceneManager::getInstange()->getClearCombo());
+	} else {
+		snprintf(clearinfiStr, _countof(clearinfiStr),
+				 "failed!\ncount : %u\ncombo : %u",
+				 SceneManager::getInstange()->getClearHalfBeat(),
+				 SceneManager::getInstange()->getClearCombo());
+	}
 }
 
 void EndScene::update() {
@@ -25,6 +37,9 @@ void EndScene::update() {
 
 	debugText.Print(spCom, "END", 0, 0, 10.f);
 	debugText.Print(spCom, "SPACE : back Stage select", 0, WinAPI::window_height / 2);
+
+	debugText.formatPrint(spCom, 0, WinAPI::window_height / 2 + debugText.fontHeight * 2, 1.f,
+						  DirectX::XMFLOAT4(1, 1, 1, 1), clearinfiStr);
 }
 
 void EndScene::draw() {

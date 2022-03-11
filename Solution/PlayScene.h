@@ -123,6 +123,8 @@ class PlayScene :
 
 	std::vector<std::vector<MAP_NUM>> mapData;
 
+	static const unsigned clearCount = 250u;
+
 private:
 	void createParticle(const DirectX::XMFLOAT3 pos, const UINT particleNum = 10U, const float startScale = 1.f);
 
