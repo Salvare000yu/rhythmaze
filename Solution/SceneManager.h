@@ -17,7 +17,8 @@ private:
 	GameScene* nowScene = nullptr;
 	SCENE_NUM nextScene;
 
-	unsigned clearHalfBeat = 0u;
+	unsigned clearHalfBeat = 0u;	//クリア時間
+	unsigned clearCombo = 0u;	//コンボ
 
 public:
 	// https://dixq.net/g/sp_06.html
@@ -31,8 +32,9 @@ public:
 	void fin() override;
 
 	void changeScene(const SCENE_NUM nextScene);
-	void goal(const unsigned clearHalfBeat);
+	void goal(const unsigned clearHalfBeat, const unsigned clearCombo);
 
 	inline unsigned getClearHalfBeat() const { return clearHalfBeat; }
+	inline unsigned getClearCombo() const { return clearCombo; }
 };
 

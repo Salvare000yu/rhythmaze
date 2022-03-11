@@ -179,7 +179,7 @@ void PlayScene::init() {
 
 #pragma region マップ
 
-	constexpr char mapCSVFilePath[] = "Resources/map/map.csv";
+	constexpr char mapCSVFilePath[] = "Resources/map/map_stage1.csv";
 	static auto mapFileData = loadCsv(mapCSVFilePath);
 
 	constexpr XMFLOAT4 wallCol = XMFLOAT4(0.5f, 0.3f, 0, 1);
@@ -444,14 +444,14 @@ void PlayScene::update() {
 				playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
 											   playerObj->position.y,
 											   playerMapPos.y * -mapSide);
+				// コンボ数加算
+				if (combo < UINT_MAX) combo++;
 
 				if (nextMapNum == MAP_NUM::GOAL) {
-					SceneManager::getInstange()->goal(beatChangeNum);
+					SceneManager::getInstange()->goal(beatChangeNum, combo);
 				}
 				// パーティクル開始
 				createParticleFlag = true;
-				// コンボ数加算
-				if (combo < UINT_MAX) combo++;
 
 			}
 
@@ -536,7 +536,7 @@ void PlayScene::update() {
 
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 16, 1.f,
 						  dbFontCol,
-						  "half beat : %u", beatChangeNum);
+						  "count : %u", beatChangeNum);
 
 	debugText.Print(spriteCommon, "WS : move camera", 0, debugText.fontHeight * 8);
 

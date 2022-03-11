@@ -28,8 +28,9 @@ void EndScene::update() {
 
 	debugText.formatPrint(spCom, 0, WinAPI::window_height / 2 + debugText.fontHeight * 2, 1.f,
 						  DirectX::XMFLOAT4(1, 1, 1, 1),
-						  "clear half beat : %u",
-						  SceneManager::getInstange()->getClearHalfBeat());
+						  "clear count : %u\nclear combo : %u",
+						  SceneManager::getInstange()->getClearHalfBeat(),
+						  SceneManager::getInstange()->getClearCombo());
 }
 
 void EndScene::draw() {
