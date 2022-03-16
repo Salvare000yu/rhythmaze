@@ -1,60 +1,11 @@
 #pragma once
 #include "GameScene.h"
 
-#include <memory>
-#include "Time.h"
-#include "Sound.h"
-#include "Sprite.h"
-#include "Object3d.h"
-#include "DebugText.h"
-
-#include <DirectXMath.h>
-
-#include "Camera.h"
-
-#include "ParticleManager.h"
-
-#include "DirectXCommon.h"
-
-#include "Input.h"
-
-#include <vector>
-
-enum class MAP_NUM : unsigned short {
-	UNDEF,		// 未定義
-	WALL,		// 壁
-	FRONT_ROAD,	// 表迫の道
-	BACK_ROAD,	// 裏拍の道
-	GOAL
-};
+#include "BaseStage.h"
 
 class PlayScene :
-	public GameScene {
+	public BaseStage {
 
-#pragma region ビュー変換行列
-
-	//DirectX::XMMATRIX matView;
-	DirectX::XMFLOAT3 eye_local;   // 視点座標
-	DirectX::XMFLOAT3 target_local;   // 注視点座標
-	DirectX::XMFLOAT3 up_local;       // 上方向ベクトル
-
-#pragma endregion ビュー変換行列
-
-#pragma region 音
-
-	std::unique_ptr<Sound::SoundCommon> soundCommon;
-
-	std::unique_ptr<Sound> bgm;
-
-	std::unique_ptr<Sound> particleSE;
-
-#pragma endregion 音
-
-#pragma region スプライト
-	// --------------------
-	// スプライト共通
-	// --------------------
-	SpriteCommon spriteCommon;
 	// スプライト共通テクスチャ読み込み
 	enum TEX_NUM { TEX1 };
 
@@ -64,81 +15,14 @@ class PlayScene :
 	static const int SPRITES_NUM = 1;
 	Sprite sprites[SPRITES_NUM]{};
 
-	// --------------------
-	// デバッグテキスト
-	// --------------------
-	DebugText debugText{};
-	// デバッグテキスト用のテクスチャ番号を指定
-	const UINT debugTextTexNumber = Sprite::spriteSRVCount - 1;
-#pragma endregion スプライト
-
-#pragma region 3Dオブジェクト
-
-	// 3Dオブジェクト用パイプライン生成
-	Object3d::PipelineSet object3dPipelineSet;
-
-	const UINT obj3dTexNum = 0U;
-	std::unique_ptr<Model> model;
-	const float obj3dScale = 10.f;
-
-	const float mapSide = obj3dScale * 2;
-
-	DirectX::XMFLOAT2 angle{};	// 各軸周りの回転角
-
-	std::vector<std::vector<Object3d>> mapObj;
-
-	std::unique_ptr<Model> playerModel;
-	std::unique_ptr<Object3d> playerObj;
-
-	DirectX::XMFLOAT2 playerMapPos;
-
-#pragma endregion 3Dオブジェクト
-
-	bool missFlag = false;
-
-	UINT combo = 0U;
-	bool movableFlag = true;
-
-	bool frontBeatFlag = true;
-
-	bool playerMoved = false;
-	bool createParticleFlag = false;
-
-	uint16_t beatChangeNum = 0;
-
-	Time::timeType beatChangeTime = 0;
-
-	DirectX::XMFLOAT3 light{};
-
-	Input* input = nullptr;
-
-	std::unique_ptr<Time> timer;
-
-	std::unique_ptr<Camera> camera;
-
-	std::unique_ptr<ParticleManager> particleMgr;
-
-	DirectXCommon* dxCom = nullptr;
-
-	std::vector<std::vector<MAP_NUM>> mapData;
-
-	// --------------------
-	// クリア条件
-	// --------------------
-	const unsigned clearCount = 250u;
-	const unsigned clearCombo = 1u;
-
 private:
-	void createParticle(const DirectX::XMFLOAT3 pos, const UINT particleNum = 10U, const float startScale = 1.f);
+	void pathInit() override;
 
-	// @return ゴール出来たらtrue
-	bool goal();
-	void timeOut();
+	void additionalInit() override;
 
-public:
-	void init() override;
-	void update() override;
-	void draw() override;
-	void fin() override;
+	void spriteInit();
+
+	void additionalDrawSprite() override;
+
 };
 

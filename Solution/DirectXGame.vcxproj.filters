@@ -43,6 +43,9 @@
     <Filter Include="System">
       <UniqueIdentifier>{8b98904a-a1b0-4725-b4d7-ee9da33a9606}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sceme\BaseScene">
+      <UniqueIdentifier>{60c77c00-2d48-4fef-be4e-3b8aa7a69725}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Input.cpp">
@@ -123,6 +126,9 @@
     <ClCompile Include="StageSelect.cpp">
       <Filter>Sceme</Filter>
     </ClCompile>
+    <ClCompile Include="BaseStage.cpp">
+      <Filter>Sceme\BaseScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Input.h">
@@ -199,6 +205,9 @@
     </ClInclude>
     <ClInclude Include="StageSelect.h">
       <Filter>Sceme</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseStage.h">
+      <Filter>Sceme\BaseScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
