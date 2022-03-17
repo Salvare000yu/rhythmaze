@@ -17,7 +17,7 @@ class StageSelect :
 	// --------------------
 	Sprite::SpriteCommon spCom;
 	// スプライト共通テクスチャ読み込み
-	enum TEX_NUM { EX, P1, P2, P3, EXn, P1n, P2n, P3n };
+	enum TEX_NUM { EX, P1, P2, P3, BACK };
 	enum class STAGE_SELECT : USHORT { EXPLANATION, STAGE1, STAGE2, STAGE3 };
 	STAGE_SELECT SELECT = STAGE_SELECT::EXPLANATION;
 
@@ -26,6 +26,7 @@ class StageSelect :
 	// --------------------
 	static const int SPRITES_NUM = 4;
 	Sprite sprites[SPRITES_NUM]{};
+	Sprite selectBack[SPRITES_NUM]{};
 
 	DebugText debugText{};
 	// デバッグテキスト用のテクスチャ番号を指定

@@ -16,6 +16,14 @@ void TitleScene::init() {
 	debugText.Initialize(DirectXCommon::getInstance()->getDev(),
 						 WinAPI::window_width, WinAPI::window_height,
 						debugTextTexNumber, spCom);
+
+
+	// ‰¹
+	soundCom.reset(new Sound::SoundCommon());
+	constexpr char titleBgmPath[] = "Resources/Music/BGM.wav";
+	bgm.reset(new Sound(titleBgmPath, soundCom.get()));
+
+	Sound::SoundPlayWave(soundCom.get(), bgm.get(), XAUDIO2_LOOP_INFINITE);
 }
 
 void TitleScene::update() {

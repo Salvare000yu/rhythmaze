@@ -5,6 +5,10 @@
 
 #include "Input.h"
 
+#include "Sound.h"
+
+#include <memory>
+
 class TitleScene :
 	public GameScene {
 
@@ -17,6 +21,9 @@ class TitleScene :
 	const UINT debugTextTexNumber = Sprite::spriteSRVCount - 1;
 
 	Input* input = nullptr;
+
+	std::unique_ptr<Sound::SoundCommon> soundCom;
+	std::unique_ptr<Sound> bgm;
 
 public:
 	void init() override;
