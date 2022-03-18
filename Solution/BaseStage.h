@@ -50,6 +50,8 @@ protected:
 
 	std::unique_ptr<Sound> particleSE;
 
+	float bgmBolume = 0.2f;
+
 #pragma endregion 音
 
 #pragma region スプライト

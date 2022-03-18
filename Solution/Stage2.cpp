@@ -1,4 +1,4 @@
-#include "PlayScene.h"
+#include "Stage2.h"
 
 #include "SceneManager.h"
 
@@ -14,8 +14,8 @@
 
 using namespace DirectX;
 
-void PlayScene::pathInit() {
-	mapCSVFilePath = "Resources/map/map_stage1.csv";
+void Stage2::pathInit() {
+	mapCSVFilePath = "Resources/map/map_stage2.csv";
 
 	//boxModelPath = L"Resources/model/box/box.obj";
 	//boxModelTexPath = L"Resources/model/box/box.png";
@@ -25,22 +25,23 @@ void PlayScene::pathInit() {
 
 	//effectTexPath = L"Resources/effect1.png";
 
-	bgmFilePath = "Resources/Music/mmc_125_BGM2.wav";
+	bgmFilePath = "Resources/Music/mmc_138_BGM3.wav";
 
 	//particleSeFilePath = "Resources/SE/Sys_Set03-click.wav";
 }
 
 // í«â¡Ç≈èâä˙âªÇ™ïKóvÇ»ÇÁÇ±ÇÃä÷êîÇÃíÜÇ…èëÇ≠
-void PlayScene::additionalInit() {
-	musicBpm = 125.f;
+void Stage2::additionalInit() {
+	musicBpm = 138.f;
+	bgmBolume = 0.4f;
 
-	clearCombo = 2u;
+	clearCombo = 1u;
 	clearCount = 250u;
 
 	spriteInit();
 }
 
-void PlayScene::spriteInit() {
+void Stage2::spriteInit() {
 	for (size_t i = 0u; i < SPRITES_NUM; i++) {
 		sprites[i].create(dxCom->getDev(),
 						  WinAPI::window_width, WinAPI::window_height,
@@ -51,7 +52,7 @@ void PlayScene::spriteInit() {
 	}
 }
 
-void PlayScene::additionalDrawSprite() {
+void Stage2::additionalDrawSprite() {
 	/*for (auto& i: sprites) {
 		i.drawWithUpdate(dxCom, spriteCommon);
 	}*/

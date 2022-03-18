@@ -94,39 +94,13 @@ void BaseStage::updateLightPosition() {
 }
 
 void BaseStage::updateCamera() {
-	const float rotaVal = XM_PIDIV2 / DirectXCommon::getInstance()->getFPS();	// 毎秒四半周
-
-	if (input->hitKey(DIK_L)) {
-		angle.y += rotaVal;
-		if (angle.y > XM_PI * 2) { angle.y = 0; }
-	} else if (input->hitKey(DIK_J)) {
-		angle.y -= rotaVal;
-		if (angle.y < 0) { angle.y = XM_PI * 2; }
-	}
-
-	if (input->hitKey(DIK_I)) {
-		if (angle.x + rotaVal < XM_PIDIV2) angle.x += rotaVal;
-	} else if (input->hitKey(DIK_K)) {
-		if (angle.x - rotaVal > -XM_PIDIV2) angle.x -= rotaVal;
-	}
-
-	// angleラジアンだけY軸まわりに回転。半径は-100
-	constexpr float camRange = 100.f;	// targetLength
-	camera->rotation(camRange, angle.x, angle.y);
-
-
 	// 移動量
 	const float moveSpeed = 75.f / dxCom->getFPS();
 	// 視点移動
-	if (input->hitKey(DIK_W)) {
+	if (input->hitKey(DIK_E)) {
 		camera->moveForward(moveSpeed);
-	} else if (input->hitKey(DIK_S)) {
+	} else if (input->hitKey(DIK_Z)) {
 		camera->moveForward(-moveSpeed);
-	}
-	if (input->hitKey(DIK_A)) {
-		camera->moveRight(-moveSpeed);
-	} else if (input->hitKey(DIK_D)) {
-		camera->moveRight(moveSpeed);
 	}
 
 	XMFLOAT3 camPos = camera->getEye();
@@ -153,27 +127,34 @@ void BaseStage::timeOut() {
 }
 
 void BaseStage::updatePlayerPos() {
+
+	// 移動に使うキー
+	constexpr auto up = DIK_UP;
+	constexpr auto down = DIK_DOWN;
+	constexpr auto right = DIK_RIGHT;
+	constexpr auto left = DIK_LEFT;
+
 	// 移動の入力があったら
-	if (input->triggerKey(DIK_UP) || input->triggerKey(DIK_DOWN) ||
-		   input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_RIGHT)) {
+	if (input->triggerKey(up) || input->triggerKey(down) ||
+		   input->triggerKey(left) || input->triggerKey(right)) {
 
 		// ゴールしたかどうか
 		bool goalFlag = false;
 
-		// 移動可能なら
+		// 移動可能なら(まだ移動しておらず、かつ移動が許されているなら)
 		if (!playerMoved && movableFlag) {
 
 			uint8_t moveDir = 0u;
 
 			// 押した方向を記録
-			if (input->triggerKey(DIK_UP)) {
-				moveDir = DIK_UP;
-			} else if (input->triggerKey(DIK_DOWN)) {
-				moveDir = DIK_DOWN;
-			} else if (input->triggerKey(DIK_LEFT)) {
-				moveDir = DIK_LEFT;
-			} else if (input->triggerKey(DIK_RIGHT)) {
-				moveDir = DIK_RIGHT;
+			if (input->triggerKey(up)) {
+				moveDir = up;
+			} else if (input->triggerKey(down)) {
+				moveDir = down;
+			} else if (input->triggerKey(left)) {
+				moveDir = left;
+			} else if (input->triggerKey(right)) {
+				moveDir = right;
 			}
 
 			// 今移動可能な道の種類
@@ -188,25 +169,25 @@ void BaseStage::updatePlayerPos() {
 
 			// 移動先のマップの種類を記録し、移動後のプレイヤーのマップ座標を記録
 			switch (moveDir) {
-			case DIK_UP:
+			case up:
 				if (playerMapPos.y - 1 >= 0) {
 					nextMapNum = mapData[playerMapPos.y - 1][playerMapPos.x];
 					nextPlayerMapPos.y--;
 				}
 				break;
-			case DIK_DOWN:
+			case down:
 				if (playerMapPos.y + 1 <= mapData.size() - 1) {
 					nextMapNum = mapData[playerMapPos.y + 1][playerMapPos.x];
 					nextPlayerMapPos.y++;
 				}
 				break;
-			case DIK_LEFT:
+			case left:
 				if (playerMapPos.x - 1 >= 0) {
 					nextMapNum = mapData[playerMapPos.y][playerMapPos.x - 1];
 					nextPlayerMapPos.x--;
 				}
 				break;
-			case DIK_RIGHT:
+			case right:
 				if (playerMapPos.x + 1 <= mapData[0].size() - 1) {
 					nextMapNum = mapData[playerMapPos.y][playerMapPos.x + 1];
 					nextPlayerMapPos.x++;
@@ -533,7 +514,7 @@ void BaseStage::init() {
 	additionalInit();
 
 	// BGM再生
-	Sound::SoundPlayWave(soundCommon.get(), bgm.get(), XAUDIO2_LOOP_INFINITE);
+	Sound::SoundPlayWave(soundCommon.get(), bgm.get(), XAUDIO2_LOOP_INFINITE, bgmBolume);
 
 	// 時間初期化
 	timer.reset(new Time());
@@ -568,7 +549,7 @@ void BaseStage::update() {
 	debugText.formatPrint(spriteCommon, 0, 0, 1.f,
 						  dbFontCol, "FPS : %f", dxCom->getFPS());
 
-	debugText.Print(spriteCommon, "WS : move camera", 0, debugText.fontHeight * 3);
+	debugText.Print(spriteCommon, "EZ : move camera", 0, debugText.fontHeight * 3);
 
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 4, 1.f,
 						  dbFontCol,
