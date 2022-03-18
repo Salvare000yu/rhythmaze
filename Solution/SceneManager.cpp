@@ -5,6 +5,7 @@
 #include "EndScene.h"
 #include "StageSelect.h"
 #include "Explanation.h"
+#include "Stage2.h"
 
 #include "Input.h"
 
@@ -49,6 +50,9 @@ void SceneManager::update() {
 			break;
 		case SCENE_NUM::EXPLANATION:
 			nowScene = new Explanation();
+			break;
+		case SCENE_NUM::STAGE2:
+			nowScene = new Stage2();
 			break;
 		}
 

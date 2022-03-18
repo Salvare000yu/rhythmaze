@@ -108,7 +108,6 @@ void StageSelect::update() {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
 	}
 
-	debugText.Print(spCom, "comming soon...", sprites[2].position.x, sprites[2].position.y, 0.75f);
 	debugText.Print(spCom, "comming soon...", sprites[3].position.x, sprites[3].position.y, 0.75f);
 
 	constexpr auto up = DIK_W;
@@ -232,6 +231,7 @@ void StageSelect::update() {
 				SceneManager::getInstange()->changeScene(SCENE_NUM::PLAY);
 				break;
 			case StageSelect::STAGE_SELECT::STAGE2:
+				SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE2);
 				break;
 			case StageSelect::STAGE_SELECT::STAGE3:
 				break;
@@ -241,7 +241,7 @@ void StageSelect::update() {
 		}
 	}
 
-	debugText.Print(spCom, "STAGE SELECT\n\nWASD : SELECT\nENTER : PLAY\nSPACE : EXPLANATION\n\nR : BACK_TITLE", 0, 0);
+	debugText.Print(spCom, "STAGE SELECT\n\nWASD : MOVE\nENTER : SELECT\n\nR : BACK_TITLE", 0, 0);
 }
 
 void StageSelect::draw() {

@@ -43,8 +43,11 @@
     <Filter Include="System">
       <UniqueIdentifier>{8b98904a-a1b0-4725-b4d7-ee9da33a9606}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sceme\BaseScene">
+    <Filter Include="Sceme\BaseStage">
       <UniqueIdentifier>{60c77c00-2d48-4fef-be4e-3b8aa7a69725}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sceme\Stage">
+      <UniqueIdentifier>{406a9752-f5b8-4eac-9190-d531ab5f7ceb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -99,9 +102,6 @@
     <ClCompile Include="EndScene.cpp">
       <Filter>Sceme</Filter>
     </ClCompile>
-    <ClCompile Include="PlayScene.cpp">
-      <Filter>Sceme</Filter>
-    </ClCompile>
     <ClCompile Include="TitleScene.cpp">
       <Filter>Sceme</Filter>
     </ClCompile>
@@ -127,7 +127,13 @@
       <Filter>Sceme</Filter>
     </ClCompile>
     <ClCompile Include="BaseStage.cpp">
-      <Filter>Sceme\BaseScene</Filter>
+      <Filter>Sceme\BaseStage</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayScene.cpp">
+      <Filter>Sceme\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage2.cpp">
+      <Filter>Sceme\Stage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -159,9 +165,6 @@
       <Filter>Camera</Filter>
     </ClInclude>
     <ClInclude Include="EndScene.h">
-      <Filter>Sceme</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayScene.h">
       <Filter>Sceme</Filter>
     </ClInclude>
     <ClInclude Include="TitleScene.h">
@@ -207,7 +210,13 @@
       <Filter>Sceme</Filter>
     </ClInclude>
     <ClInclude Include="BaseStage.h">
-      <Filter>Sceme\BaseScene</Filter>
+      <Filter>Sceme\BaseStage</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayScene.h">
+      <Filter>Sceme\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage2.h">
+      <Filter>Sceme\Stage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
