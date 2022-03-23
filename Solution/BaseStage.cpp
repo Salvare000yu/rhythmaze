@@ -83,6 +83,7 @@ namespace {
 void BaseStage::updateLightPosition() {
 	// プレイヤーの位置にライトを置く
 	light = playerObj->position;
+	light.z -= playerObj->scale.y / 2.f;
 
 	playerObj->setLightPos(light);
 
@@ -432,11 +433,27 @@ void BaseStage::init() {
 
 #pragma region 3Dオブジェクト
 	object3dPipelineSet = Object3d::createGraphicsPipeline(dxCom->getDev());
+	backPipelineSet = Object3d::createGraphicsPipeline(dxCom->getDev(), Object3d::BLEND_MODE::ALPHA,
+													   L"Resources/Shaders/backVS.hlsl",
+													   L"Resources/Shaders/backPS.hlsl");
+
+	backModel.reset(new Model(dxCom->getDev(),
+							  backModelPath.c_str(), backModelTexPath.c_str(),
+							  WinAPI::window_width, WinAPI::window_height,
+							  Object3d::constantBufferNum,
+							  0));
+	backObj.reset(new Object3d(dxCom->getDev(), backModel.get(), 0));
+	constexpr float backScale = 10.f;
+	backObj->scale = XMFLOAT3(backScale, backScale, backScale);
 
 	model.reset(new Model(DirectXCommon::getInstance()->getDev(),
-						  boxModelPath.c_str(), boxModelTexPath.c_str(),
+						  boxModelPath.c_str(), boxModelTexPath_wall.c_str(),
 						  WinAPI::window_width, WinAPI::window_height,
-						  Object3d::constantBufferNum, obj3dTexNum));
+						  Object3d::constantBufferNum, BOX_TEXNUM::WALL));
+	model->loadTexture(dxCom->getDev(), boxModelTexPath_wall.c_str(), BOX_TEXNUM::WALL);
+	model->loadTexture(dxCom->getDev(), boxModelTexPath_front.c_str(), BOX_TEXNUM::FRONT);
+	model->loadTexture(dxCom->getDev(), boxModelTexPath_back.c_str(), BOX_TEXNUM::BACK);
+	model->loadTexture(dxCom->getDev(), boxModelTexPath_goal.c_str(), BOX_TEXNUM::GOAL);
 
 	constexpr XMFLOAT4 wallCol = XMFLOAT4(0.5f, 0.3f, 0, 1);
 	constexpr XMFLOAT4 backRoadCol = XMFLOAT4(1, 0, 1, 1);
@@ -448,7 +465,7 @@ void BaseStage::init() {
 	for (UINT y = 0; y < mapData.size(); ++y) {
 		mapObj.emplace_back();
 		for (UINT x = 0; x < mapData[y].size(); ++x) {
-			mapObj[y].emplace_back(Object3d(DirectXCommon::getInstance()->getDev(), model.get(), obj3dTexNum));
+			mapObj[y].emplace_back(Object3d(DirectXCommon::getInstance()->getDev(), model.get(), BOX_TEXNUM::WALL));
 			mapObj[y][x].scale = XMFLOAT3(obj3dScale, obj3dScale, obj3dScale);
 			mapObj[y][x].position = XMFLOAT3(x * mapSide,
 											 mapPosY,
@@ -456,21 +473,22 @@ void BaseStage::init() {
 
 			switch (mapData[y][x]) {
 			case MAP_NUM::WALL:
-				mapObj[y][x].color = wallCol;
-				mapObj[y][x].scale.y *= 2.f;
 				mapObj[y][x].position.y += obj3dScale;
+				mapObj[y][x].texNum = BOX_TEXNUM::WALL;
+				mapObj[y][x].color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
 				break;
 			case MAP_NUM::FRONT_ROAD:
-				mapObj[y][x].color = frontRoadCol;
+				mapObj[y][x].texNum = BOX_TEXNUM::FRONT;
 				break;
 			case MAP_NUM::BACK_ROAD:
-				mapObj[y][x].color = backRoadCol;
+				mapObj[y][x].texNum = BOX_TEXNUM::BACK;
 				break;
 			case MAP_NUM::GOAL:
-				mapObj[y][x].color = goalCol;
+				mapObj[y][x].texNum = BOX_TEXNUM::GOAL;
+				mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
 				break;
 			default:
-				mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+				mapObj[y][x].color = XMFLOAT4(0, 0, 1, 1);
 			}
 		}
 	}
@@ -485,8 +503,10 @@ void BaseStage::init() {
 
 	playerObj.reset(new Object3d(dxCom->getDev(), playerModel.get(), 0));
 	playerObj->scale = { obj3dScale, obj3dScale, obj3dScale };
-	playerObj->position = mapObj[startMapPos.x][startMapPos.y].position;
+	playerObj->position = mapObj[startMapPos.y][startMapPos.x].position;
 	playerObj->position.y += mapSide;
+
+	playerObj->rotation.x += 90.f;
 
 #pragma endregion 3Dオブジェクト
 
@@ -521,6 +541,9 @@ void BaseStage::init() {
 }
 
 void BaseStage::update() {
+	// 天球回転
+	backObj->rotation.y += 0.1f;
+
 	// カメラの座標を更新
 	updateCamera();
 
@@ -589,6 +612,8 @@ void BaseStage::draw() {
 
 void BaseStage::drawObj3d() {
 	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), object3dPipelineSet);
+
+	backObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 
 	for (UINT y = 0; y < mapData.size(); ++y) {
 		for (UINT x = 0; x < mapData[y].size(); ++x) {

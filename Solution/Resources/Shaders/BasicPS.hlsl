@@ -8,12 +8,12 @@ float4 main(VSOutput input) : SV_TARGET
 	float4 texcolor = float4(tex.Sample(smp, input.uv));
 	float3 normalLight = normalize(light);
 
-	float lightPower = 0.25f;
+	float lightPower = 0.75f;
 
 	// 光源へのベクトルと法線ベクトルの内積
 	float diffuse = saturate(dot(-normalLight, input.normal)) * lightPower;
 	// アンビエント光を0.3として計算
-	float brightness = diffuse + 0.4f;
+	float brightness = diffuse + 0.2f;
 	// テクスチャとシェーディングによる色を合成
 	return float4(texcolor.rgb * brightness, texcolor.a) * color;
 }

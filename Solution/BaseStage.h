@@ -69,6 +69,7 @@ protected:
 
 	// 3Dオブジェクト用パイプライン生成
 	Object3d::PipelineSet object3dPipelineSet;
+	Object3d::PipelineSet backPipelineSet;
 
 	const UINT obj3dTexNum = 0U;
 	std::unique_ptr<Model> model;
@@ -84,6 +85,11 @@ protected:
 	std::unique_ptr<Object3d> playerObj;
 
 	DirectX::XMFLOAT2 playerMapPos;
+
+
+
+	std::unique_ptr<Model> backModel;
+	std::unique_ptr<Object3d> backObj;
 
 #pragma endregion 3Dオブジェクト
 
@@ -149,8 +155,19 @@ protected:
 
 	std::string mapCSVFilePath = "Resources/map/map_stage1.csv";
 
+	enum BOX_TEXNUM
+		: unsigned short {
+		WALL,
+		FRONT,
+		BACK,
+		GOAL
+	};
+
 	std::wstring boxModelPath = L"Resources/model/box/box.obj";
-	std::wstring boxModelTexPath = L"Resources/model/box/box.png";
+	std::wstring boxModelTexPath_wall = L"Resources/model/box/box.png";
+	std::wstring boxModelTexPath_front = L"Resources/model/box/haimidoriBlock.png";
+	std::wstring boxModelTexPath_back = L"Resources/model/box/tyrianPurpleBlock.png";
+	std::wstring boxModelTexPath_goal = L"Resources/model/box/box.png";
 
 	std::wstring playerModelPath = L"Resources/model/player/model.obj";
 	std::wstring playerModelTexPath = L"Resources/model/player/tex.png";
@@ -160,6 +177,9 @@ protected:
 	std::string bgmFilePath = "Resources/Music/mmc_125_BGM2.wav";
 
 	std::string particleSeFilePath = "Resources/SE/Sys_Set03-click.wav";
+
+	std::wstring backModelPath = L"Resources/model/back/back.obj";
+	std::wstring backModelTexPath = L"Resources/model/back/back_tex.png";
 
 #pragma endregion ファイルパス
 
