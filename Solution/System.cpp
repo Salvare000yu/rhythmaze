@@ -7,7 +7,7 @@
 #include "Looper.h"
 
 System::System() {
-	constexpr LPCSTR window_title = "リズメイズ";
+	constexpr LPCSTR window_title = "リズメイズ(SE : OtoLogic)";
 	WinAPI::getInstance()->setWindowText(window_title);
 }
 

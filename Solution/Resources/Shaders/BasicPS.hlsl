@@ -13,7 +13,7 @@ float4 main(VSOutput input) : SV_TARGET
 	// 光源へのベクトルと法線ベクトルの内積
 	float diffuse = saturate(dot(-normalLight, input.normal)) * lightPower;
 	// アンビエント光を0.3として計算
-	float brightness = diffuse + 0.3f;
+	float brightness = diffuse + 0.4f;
 	// テクスチャとシェーディングによる色を合成
 	return float4(texcolor.rgb * brightness, texcolor.a) * color;
 }
