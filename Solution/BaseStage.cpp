@@ -195,11 +195,11 @@ void BaseStage::updatePlayerPos() {
 
 	if (playerEasing) {
 		const auto halfBeatTime = 60 * Time::oneSec / musicBpm / 2.f;
-		const auto easeAllTime = halfBeatTime / 2.f;
+		const auto easeAllTime = halfBeatTime / 2;
 
 		const auto easeNowTime = easeTime->getNowTime();
 
-		const auto easeTimeRaito = easeNowTime / easeAllTime;
+		const auto easeTimeRaito = (float)easeNowTime / easeAllTime;
 
 		playerObj->position = easePos(easeStartPos, easeEndPos, easeTimeRaito, easeAllTime);
 
@@ -248,32 +248,6 @@ void BaseStage::createParticle(const DirectX::XMFLOAT3 pos,
 							   const UINT particleNum, const float startScale) {
 	for (UINT i = 0U; i < particleNum; ++i) {
 
-		const float theata = RandomNum::getRandf(0, XM_PIDIV2);
-		const float phi = RandomNum::getRandf(0, XM_PI * 2.f);
-		const float r = RandomNum::getRandf(0, 5.f);
-
-		// X,Y,Z‘S‚Ä[-2.5f,+2.5f]‚Åƒ‰ƒ“ƒ_ƒ€‚É•ª•z
-		constexpr float rnd_pos = 2.5f;
-		XMFLOAT3 generatePos = pos;
-		/*generatePos.x += Random::getRandNormallyf(0.f, rnd_pos);
-		generatePos.y += Random::getRandNormallyf(0.f, rnd_pos);
-		generatePos.z += Random::getRandNormallyf(0.f, rnd_pos);*/
-
-		//constexpr float rnd_vel = 0.0625f;
-		const XMFLOAT3 vel{
-			r * sin(theata) * cos(phi),
-			r * cos(theata),
-			r * sin(theata) * sin(phi)
-		};
-
-		//constexpr float rnd_acc = 0.05f;
-		XMFLOAT3 acc{};
-
-		/*acc.x = 0.f;
-		acc.y = -Random::getRandf(rnd_acc, rnd_acc * 2.f);
-		acc.z = 0.f;*/
-
-
 		constexpr auto startCol = XMFLOAT3(1, 1, 0.75f), endCol = XMFLOAT3(1, 0, 1);
 		constexpr int life = Time::oneSec / 4;
 		constexpr float endScale = 0.f;
@@ -281,7 +255,7 @@ void BaseStage::createParticle(const DirectX::XMFLOAT3 pos,
 
 		// ’Ç‰Á
 		particleMgr->add(timer.get(),
-						 life, generatePos, vel, acc,
+						 life, pos,
 						 startScale, endScale,
 						 startRota, endRota,
 						 startCol, endCol);
@@ -292,7 +266,7 @@ void BaseStage::startParticle(const DirectX::XMFLOAT3 pos) {
 	constexpr UINT particleNumMax = 50U, particleNumMin = 20U;
 	UINT particleNum = particleNumMin;
 
-	constexpr float scaleMin = 1.f, scaleMax = 10.f;
+	constexpr float scaleMin = 1.5f, scaleMax = 10.f;
 	constexpr UINT maxCombo = 20U;
 	float startScale = scaleMin;
 
@@ -603,7 +577,7 @@ void BaseStage::drawObj3d() {
 void BaseStage::drawParticle() {
 	ParticleManager::startDraw(dxCom->getCmdList(), object3dPipelineSet);
 
-	particleMgr->drawWithUpdate(dxCom->getCmdList());
+	particleMgr->drawWithUpdate(dxCom->getCmdList(), playerObj->position);
 
 	additionalDrawParticle();
 }

@@ -1,5 +1,7 @@
 #include "ParticleManager.h"
 
+#include "RandomNum.h"
+
 #include <d3dcompiler.h>
 #include <DirectXTex.h>
 
@@ -7,6 +9,76 @@
 
 using namespace DirectX;
 using namespace Microsoft::WRL;
+
+namespace {
+	// @return 0 <= ret[rad] < 2PI
+	float angleRoundRad(float rad) {
+		float angle = rad;
+
+		if (angle >= 0.f && angle < XM_2PI) return angle;
+
+		while (angle >= XM_2PI) {
+			angle -= XM_2PI;
+		}
+		while (angle < 0) {
+			angle += XM_2PI;
+		}
+		return angle;
+	}
+
+	float nearSin(float rad) {
+		constexpr auto a = +0.005859483;
+		constexpr auto b = +0.005587939;
+		constexpr auto c = -0.171570726;
+		constexpr auto d = +0.0018185485;
+		constexpr auto e = +0.9997773594;
+
+		double x = angleRoundRad(rad);
+
+		// 0 ~ PI/2がわかれば求められる
+		if (x < XM_PIDIV2) {
+			// そのまま
+		} else if (x >= XM_PIDIV2 && x < XM_PI) {
+			x = XM_PI - x;
+		} else if (x < XM_PI * 1.5f) {
+			x = -(x - XM_PI);
+		} else if (x < XM_2PI) {
+			x = -(XM_2PI - x);
+		}
+
+		return x * (x * (x * (x * (a * x + b) + c) + d) + e);
+	}
+
+	float nearCos(float rad) {
+		return nearSin(rad + XM_PIDIV2);
+	}
+
+	float nearTan(float rad) {
+		return nearSin(rad) / nearCos(rad);
+	}
+
+	float mySin(float rad) {
+		float ret = angleRoundRad(rad);
+
+		if (rad < XM_PIDIV2) {
+			ret = nearSin(rad);
+		} else if (rad < XM_PI) {
+			ret = nearSin(XM_PI - rad);
+		} else if (rad < XM_PI * 1.5f) {
+			ret = -nearSin(rad - XM_PI);
+		} else if (rad < XM_2PI) {
+			ret = -nearSin(XM_2PI - rad);
+		} else {
+			ret = nearSin(rad);
+		}
+
+		return ret;
+	}
+
+	float myCos(float rad) {
+		return mySin(rad + XM_PIDIV2);
+	}
+}
 
 static const DirectX::XMFLOAT3 operator+(const DirectX::XMFLOAT3& lhs, const DirectX::XMFLOAT3& rhs) {
 	XMFLOAT3 result;
@@ -38,7 +110,7 @@ void ParticleManager::init(ID3D12Device* device, const wchar_t* texFilePath) {
 
 	this->dev = device;
 
-	HRESULT result;
+	HRESULT result = S_FALSE;
 
 	// デスクリプタヒープの初期化
 	InitializeDescriptorHeap();
@@ -75,8 +147,10 @@ ParticleManager::ParticleManager(ID3D12Device* device,
 	setCamera(camera);
 }
 
-void ParticleManager::update() {
+void ParticleManager::update(const DirectX::XMFLOAT3 startPos, const int gravity) {
 	HRESULT result = S_FALSE;
+
+	this->startPos = startPos;
 
 	// 全パーティクル更新
 	for (std::forward_list<Particle>::iterator it = particles.begin();
@@ -88,12 +162,14 @@ void ParticleManager::update() {
 		// 進行度を0～1の範囲に換算
 		const float f = (float)it->life / it->nowTime;
 
-		// todo 時間依存にする
-		// 速度に加速度を加算
-		it->velocity = it->velocity + it->accel;
+		// 現在時間[s]
+		const auto timeSec = (float)it->nowTime / Time::oneSec;
 
-		// 速度による移動
-		it->position = it->position + it->velocity;
+		// 座標を更新
+		it->position = this->startPos;
+		it->position.x += timeSec * it->velocity.x;
+		it->position.y += timeSec * it->velocity.y;
+		it->position.z += timeSec * it->velocity.z + (-gravity * timeSec * timeSec / 2.f);
 
 		// カラーの線形補間
 		//it->color = it->s_color + (it->e_color - it->s_color) / f;
@@ -179,13 +255,13 @@ void ParticleManager::draw(ID3D12GraphicsCommandList* cmdList) {
 	cmdList->DrawInstanced(drawNum, 1, 0, 0);
 }
 
-void ParticleManager::drawWithUpdate(ID3D12GraphicsCommandList* cmdList) {
-	update();
+void ParticleManager::drawWithUpdate(ID3D12GraphicsCommandList* cmdList, const DirectX::XMFLOAT3 startPos, const int gravity) {
+	update(startPos, gravity);
 	draw(cmdList);
 }
 
 void ParticleManager::add(Time* timer, int life,
-						  XMFLOAT3 position, XMFLOAT3 velocity, XMFLOAT3 accel,
+						  XMFLOAT3 position,
 						  float start_scale, float end_scale,
 						  float start_rotation, float end_rotation,
 						  XMFLOAT3 start_color, XMFLOAT3 end_color) {
@@ -194,8 +270,15 @@ void ParticleManager::add(Time* timer, int life,
 	// 追加した要素の参照
 	Particle& p = particles.front();
 	p.position = position;
-	p.velocity = velocity;
-	p.accel = accel;
+
+	constexpr float planeAngle = XM_PI / 180.f;
+	const auto angleFai = planeAngle * RandomNum::getRandf(0, 359);
+	const auto angleTheata = planeAngle * RandomNum::getRandf(0, 359);
+	const float v = RandomNum::getRand(128, 256);
+
+	p.velocity.x = v * mySin(angleTheata) * myCos(angleFai);
+	p.velocity.y = v * myCos(angleTheata);
+	p.velocity.z = v * mySin(angleTheata) * mySin(angleFai);
 
 	p.s_scale = start_scale;
 	p.e_scale = end_scale;

@@ -50,10 +50,8 @@ public:
 	public:
 		// 座標
 		XMFLOAT3 position = {};
-		// 速度
+		// 初速度
 		XMFLOAT3 velocity = {};
-		// 加速度
-		XMFLOAT3 accel = {};
 		// 色
 		XMFLOAT3 color = {};
 		// スケール
@@ -110,6 +108,8 @@ private:
 	std::forward_list<Particle> particles;
 	Camera* camera = nullptr;
 
+	DirectX::XMFLOAT3 startPos{};
+
 	// メンバ関数
 public:
 	static void ParticleManager::startDraw(ID3D12GraphicsCommandList* cmdList,
@@ -122,10 +122,10 @@ public:
 	ParticleManager(ID3D12Device* device, const wchar_t* texFilePath, Camera* camera);
 
 	void init(ID3D12Device* device, const wchar_t* texFilePath);
-	void update();
+	void update(const DirectX::XMFLOAT3 startPos, const int gravity = 200);
 	void draw(ID3D12GraphicsCommandList* cmdList);
 
-	void drawWithUpdate(ID3D12GraphicsCommandList* cmdList);
+	void drawWithUpdate(ID3D12GraphicsCommandList* cmdList, const DirectX::XMFLOAT3 startPos, const int gravity = 200);
 
 	inline void setCamera(Camera* camera) { this->camera = camera; }
 
@@ -134,12 +134,12 @@ public:
 	/// </summary>
 	/// <param name="life">生存時間</param>
 	/// <param name="position">初期座標</param>
-	/// <param name="velocity">速度</param>
+	/// <param name="velocity">初速度</param>
 	/// <param name="accel">加速度</param>
 	/// <param name="start_scale">開始時スケール</param>
 	/// <param name="end_scale">終了時スケール</param>
 	void add(Time* timer, int life,
-			 XMFLOAT3 position, XMFLOAT3 velocity, XMFLOAT3 accel,
+			 XMFLOAT3 position,
 			 float start_scale, float end_scale,
 			 float start_rotation, float end_rotation,
 			 XMFLOAT3 start_color, XMFLOAT3 end_color);
