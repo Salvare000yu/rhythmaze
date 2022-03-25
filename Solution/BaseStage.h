@@ -151,6 +151,17 @@ protected:
 	unsigned clearCombo = 1u;
 #pragma endregion クリア条件
 
+#pragma region イージング
+
+	DirectX::XMFLOAT3 easeStartPos{};
+	DirectX::XMFLOAT3 easeEndPos{};
+
+	std::unique_ptr<Time> easeTime{};
+
+	bool playerEasing = false;
+
+#pragma endregion イージング
+
 #pragma region ファイルパス
 
 	std::string mapCSVFilePath = "Resources/map/map_stage1.csv";
@@ -199,7 +210,12 @@ protected:
 
 	void createParticle(const DirectX::XMFLOAT3 pos,
 						const UINT particleNum = 10U, const float startScale = 1.f);
-	void startParticle();
+	void startParticle(const DirectX::XMFLOAT3 pos);
+
+	DirectX::XMFLOAT3 easePos(const DirectX::XMFLOAT3 startPos,
+							  const DirectX::XMFLOAT3 endPos,
+							  const float timeRaito,
+							  const int easeTime);
 
 	void drawObj3d();
 	void drawParticle();
