@@ -20,6 +20,8 @@ class TitleScene :
 	// デバッグテキスト用のテクスチャ番号を指定
 	const UINT debugTextTexNumber = Sprite::spriteSRVCount - 1;
 
+	std::unique_ptr<Sprite> titleSprite;
+
 	Input* input = nullptr;
 
 	std::unique_ptr<Sound::SoundCommon> soundCom;

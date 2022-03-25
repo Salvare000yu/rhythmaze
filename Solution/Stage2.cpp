@@ -35,7 +35,7 @@ void Stage2::additionalInit() {
 	musicBpm = 138.f;
 	bgmBolume = 0.4f;
 
-	clearCombo = 1u;
+	clearCombo = 2u;
 	clearCount = 250u;
 
 	spriteInit();

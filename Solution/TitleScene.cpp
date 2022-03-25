@@ -10,6 +10,14 @@ void TitleScene::init() {
 	spCom = Sprite::createSpriteCommon(DirectXCommon::getInstance()->getDev(),
 									   WinAPI::window_width, WinAPI::window_height);
 
+	constexpr UINT titleSpriteNum = 0;
+	Sprite::commonLoadTexture(spCom, 0, L"Resources/Title/title.png", DirectXCommon::getInstance()->getDev());
+
+	titleSprite.reset(new Sprite());
+	titleSprite->create(DirectXCommon::getInstance()->getDev(),
+						WinAPI::window_width, WinAPI::window_height,
+						titleSpriteNum, spCom, DirectX::XMFLOAT2(0, 0), false, false);
+
 	// デバッグテキスト用のテクスチャ読み込み
 	Sprite::commonLoadTexture(spCom, debugTextTexNumber, L"Resources/debugfont.png", DirectXCommon::getInstance()->getDev());
 
@@ -30,11 +38,11 @@ void TitleScene::update() {
 	if (input->triggerKey(DIK_SPACE)) {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
 	}
-	debugText.Print(spCom, "RHYTHMAZE", 0, 0, 7.5f);
-	debugText.Print(spCom, "SPACE : stage select", 0, WinAPI::window_height / 2);
+	debugText.Print(spCom, "SPACE : stage select", debugText.fontWidth * 1.5f, WinAPI::window_height - debugText.fontHeight * 1.5f);
 }
 
 void TitleScene::draw() {
 	Sprite::drawStart(spCom, DirectXCommon::getInstance()->getCmdList());
+	titleSprite->drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	debugText.DrawAll(DirectXCommon::getInstance(), spCom);
 }

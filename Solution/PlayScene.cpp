@@ -34,7 +34,7 @@ void PlayScene::pathInit() {
 void PlayScene::additionalInit() {
 	musicBpm = 125.f;
 
-	clearCombo = 2u;
+	clearCombo = 1u;
 	clearCount = 250u;
 
 	spriteInit();

@@ -241,6 +241,12 @@
     <FxCompile Include="Resources\Shaders\ParticleVS.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\backPS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\backVS.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\Basic.hlsli">
@@ -250,6 +256,9 @@
       <Filter>シェーダーファイル</Filter>
     </None>
     <None Include="Resources\Shaders\Particle.hlsli">
+      <Filter>シェーダーファイル</Filter>
+    </None>
+    <None Include="Resources\Shaders\back.hlsli">
       <Filter>シェーダーファイル</Filter>
     </None>
   </ItemGroup>
