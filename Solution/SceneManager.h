@@ -5,7 +5,8 @@
 enum class SCENE_NUM : unsigned short {
 	NONE,
 	TITLE, SELECT, EXPLANATION, PLAY, END,
-	STAGE2
+	STAGE2,
+	STAGE3
 };
 
 class SceneManager
