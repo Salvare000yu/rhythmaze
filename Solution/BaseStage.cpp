@@ -447,11 +447,16 @@ void BaseStage::init() {
 								Object3d::constantBufferNum, 0));
 
 	playerObj.reset(new Object3d(dxCom->getDev(), playerModel.get(), 0));
-	playerObj->scale = { obj3dScale, obj3dScale, obj3dScale };
+
+	const float playerScale = obj3dScale * 0.4f;
+	playerObj->scale = { playerScale, playerScale, playerScale };
+
 	playerObj->position = mapObj[startMapPos.y][startMapPos.x].position;
 	playerObj->position.y += mapSide;
 
-	playerObj->rotation.x += 90.f;
+	playerObj->rotation.y += 90.f;
+	playerObj->rotation.z += 90.f;
+	//playerObj->scale = XMFLOAT3(0.5f, 0.5f, 0.5f);
 
 	easeStartPos = playerObj->position;
 	easeEndPos = playerObj->position;

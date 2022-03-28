@@ -180,8 +180,8 @@ protected:
 	std::wstring boxModelTexPath_back = L"Resources/model/box/tyrianPurpleBlock.png";
 	std::wstring boxModelTexPath_goal = L"Resources/model/box/box.png";
 
-	std::wstring playerModelPath = L"Resources/model/player/model.obj";
-	std::wstring playerModelTexPath = L"Resources/model/player/tex.png";
+	std::wstring playerModelPath = L"Resources/model/player/note.obj";
+	std::wstring playerModelTexPath = L"Resources/model/player/nanohanairo.png";
 
 	std::wstring effectTexPath = L"Resources/effect1.png";
 
