@@ -108,8 +108,6 @@ void StageSelect::update() {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
 	}
 
-	debugText.Print(spCom, "comming soon...", sprites[3].position.x, sprites[3].position.y, 0.75f);
-
 	constexpr auto up = DIK_W;
 	constexpr auto down = DIK_S;
 	constexpr auto right = DIK_D;
@@ -234,6 +232,7 @@ void StageSelect::update() {
 				SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE2);
 				break;
 			case StageSelect::STAGE_SELECT::STAGE3:
+				SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE3);
 				break;
 			default:
 				break;
