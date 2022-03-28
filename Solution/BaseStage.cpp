@@ -9,75 +9,25 @@
 
 using namespace DirectX;
 
-// todo これらを格納するクラスを作る(ユーティリティクラス？)
-namespace {
-	// @return 0 <= ret[rad] < 2PI
-	float angleRoundRad(float rad) {
-		float angle = rad;
+DirectX::XMFLOAT3 BaseStage::easePos(const DirectX::XMFLOAT3 startPos,
+									 const DirectX::XMFLOAT3 endPos,
+									 const float timeRaito,
+									 const int easeTime) {
+	const auto raitoCoe = 1.f - timeRaito;
+	const auto easeVal = raitoCoe * raitoCoe * raitoCoe * raitoCoe * raitoCoe;
+	const auto nowTime = easeVal * easeTime;
 
-		if (angle >= 0.f && angle < XM_2PI) return angle;
+	const auto moveVal = XMFLOAT3(
+		endPos.x - startPos.x,
+		endPos.y - startPos.y,
+		endPos.z - startPos.z
+	);
 
-		while (angle >= XM_2PI) {
-			angle -= XM_2PI;
-		}
-		while (angle < 0) {
-			angle += XM_2PI;
-		}
-		return angle;
-	}
-
-	float nearSin(float rad) {
-		constexpr auto a = +0.005859483;
-		constexpr auto b = +0.005587939;
-		constexpr auto c = -0.171570726;
-		constexpr auto d = +0.0018185485;
-		constexpr auto e = +0.9997773594;
-
-		double x = angleRoundRad(rad);
-
-		// 0 ~ PI/2がわかれば求められる
-		if (x < XM_PIDIV2) {
-			// そのまま
-		} else if (x >= XM_PIDIV2 && x < XM_PI) {
-			x = XM_PI - x;
-		} else if (x < XM_PI * 1.5f) {
-			x = -(x - XM_PI);
-		} else if (x < XM_2PI) {
-			x = -(XM_2PI - x);
-		}
-
-		return x * (x * (x * (x * (a * x + b) + c) + d) + e);
-	}
-
-	float nearCos(float rad) {
-		return nearSin(rad + XM_PIDIV2);
-	}
-
-	float nearTan(float rad) {
-		return nearSin(rad) / nearCos(rad);
-	}
-
-	float mySin(float rad) {
-		float ret = angleRoundRad(rad);
-
-		if (rad < XM_PIDIV2) {
-			ret = nearSin(rad);
-		} else if (rad < XM_PI) {
-			ret = nearSin(XM_PI - rad);
-		} else if (rad < XM_PI * 1.5f) {
-			ret = -nearSin(rad - XM_PI);
-		} else if (rad < XM_2PI) {
-			ret = -nearSin(XM_2PI - rad);
-		} else {
-			ret = nearSin(rad);
-		}
-
-		return ret;
-	}
-
-	float myCos(float rad) {
-		return mySin(rad + XM_PIDIV2);
-	}
+	return XMFLOAT3(
+		startPos.x + (1.f - easeVal) * moveVal.x,
+		startPos.y + (1.f - easeVal) * moveVal.y,
+		startPos.z + (1.f - easeVal) * moveVal.z
+	);
 }
 
 void BaseStage::updateLightPosition() {
@@ -136,8 +86,8 @@ void BaseStage::updatePlayerPos() {
 	constexpr auto left = DIK_LEFT;
 
 	// 移動の入力があったら
-	if (input->triggerKey(up) || input->triggerKey(down) ||
-		   input->triggerKey(left) || input->triggerKey(right)) {
+	if (input->triggerKey(up) || input->triggerKey(down)
+		|| input->triggerKey(left) || input->triggerKey(right)) {
 
 		// ゴールしたかどうか
 		bool goalFlag = false;
@@ -204,10 +154,15 @@ void BaseStage::updatePlayerPos() {
 				playerMoved = true;
 				// 移動後のマップ座標を反映
 				playerMapPos = nextPlayerMapPos;
-				// 移動後の座標を反映
-				playerObj->position = XMFLOAT3(playerMapPos.x * mapSide,
+				// イージング開始
+				playerEasing = true;
+				easeStartPos = playerObj->position;
+				easeEndPos = XMFLOAT3(playerMapPos.x * mapSide,
 											   playerObj->position.y,
 											   playerMapPos.y * -mapSide);
+				// イージング開始時間をリセット
+				easeTime->reset();
+
 				// コンボ数加算
 				if (combo < UINT_MAX) ++combo;
 
@@ -236,6 +191,22 @@ void BaseStage::updatePlayerPos() {
 		}
 
 		if (goalFlag) goal();
+	}
+
+	if (playerEasing) {
+		const auto halfBeatTime = 60 * Time::oneSec / musicBpm / 2.f;
+		const auto easeAllTime = halfBeatTime / 2;
+
+		const auto easeNowTime = easeTime->getNowTime();
+
+		const auto easeTimeRaito = (float)easeNowTime / easeAllTime;
+
+		playerObj->position = easePos(easeStartPos, easeEndPos, easeTimeRaito, easeAllTime);
+
+		if (easeTimeRaito >= 1.f) playerEasing = false;
+
+		// todo エフェクトの位置をプレイヤーの移動に合わせる
+		//			-> 毎フレーム加算式から現在値補間式に変える
 	}
 }
 
@@ -277,32 +248,6 @@ void BaseStage::createParticle(const DirectX::XMFLOAT3 pos,
 							   const UINT particleNum, const float startScale) {
 	for (UINT i = 0U; i < particleNum; ++i) {
 
-		const float theata = RandomNum::getRandf(0, XM_PIDIV2);
-		const float phi = RandomNum::getRandf(0, XM_PI * 2.f);
-		const float r = RandomNum::getRandf(0, 5.f);
-
-		// X,Y,Z全て[-2.5f,+2.5f]でランダムに分布
-		constexpr float rnd_pos = 2.5f;
-		XMFLOAT3 generatePos = pos;
-		/*generatePos.x += Random::getRandNormallyf(0.f, rnd_pos);
-		generatePos.y += Random::getRandNormallyf(0.f, rnd_pos);
-		generatePos.z += Random::getRandNormallyf(0.f, rnd_pos);*/
-
-		//constexpr float rnd_vel = 0.0625f;
-		const XMFLOAT3 vel{
-			r * sin(theata) * cos(phi),
-			r * cos(theata),
-			r * sin(theata) * sin(phi)
-		};
-
-		//constexpr float rnd_acc = 0.05f;
-		XMFLOAT3 acc{};
-
-		/*acc.x = 0.f;
-		acc.y = -Random::getRandf(rnd_acc, rnd_acc * 2.f);
-		acc.z = 0.f;*/
-
-
 		constexpr auto startCol = XMFLOAT3(1, 1, 0.75f), endCol = XMFLOAT3(1, 0, 1);
 		constexpr int life = Time::oneSec / 4;
 		constexpr float endScale = 0.f;
@@ -310,18 +255,18 @@ void BaseStage::createParticle(const DirectX::XMFLOAT3 pos,
 
 		// 追加
 		particleMgr->add(timer.get(),
-						 life, generatePos, vel, acc,
+						 life, pos,
 						 startScale, endScale,
 						 startRota, endRota,
 						 startCol, endCol);
 	}
 }
 
-void BaseStage::startParticle() {
+void BaseStage::startParticle(const DirectX::XMFLOAT3 pos) {
 	constexpr UINT particleNumMax = 50U, particleNumMin = 20U;
 	UINT particleNum = particleNumMin;
 
-	constexpr float scaleMin = 1.f, scaleMax = 10.f;
+	constexpr float scaleMin = 1.5f, scaleMax = 10.f;
 	constexpr UINT maxCombo = 20U;
 	float startScale = scaleMin;
 
@@ -333,7 +278,7 @@ void BaseStage::startParticle() {
 	particleNum += (particleNumMax - particleNumMin) * nowComboRaito;
 	startScale += (scaleMax - scaleMin) * nowComboRaito;
 
-	createParticle(playerObj->position, particleNum, startScale);
+	createParticle(pos, particleNum, startScale);
 
 	// SE鳴らす
 	Sound::SoundPlayWave(soundCommon.get(), particleSE.get());
@@ -508,6 +453,9 @@ void BaseStage::init() {
 
 	playerObj->rotation.x += 90.f;
 
+	easeStartPos = playerObj->position;
+	easeEndPos = playerObj->position;
+
 #pragma endregion 3Dオブジェクト
 
 #pragma region ライト
@@ -537,6 +485,7 @@ void BaseStage::init() {
 	Sound::SoundPlayWave(soundCommon.get(), bgm.get(), XAUDIO2_LOOP_INFINITE, bgmBolume);
 
 	// 時間初期化
+	easeTime.reset(new Time());
 	timer.reset(new Time());
 }
 
@@ -555,7 +504,7 @@ void BaseStage::update() {
 
 	// パーティクル開始
 	if (createParticleFlag) {
-		startParticle();
+		startParticle(playerObj->position);
 
 		createParticleFlag = false;
 	}
@@ -628,7 +577,7 @@ void BaseStage::drawObj3d() {
 void BaseStage::drawParticle() {
 	ParticleManager::startDraw(dxCom->getCmdList(), object3dPipelineSet);
 
-	particleMgr->drawWithUpdate(dxCom->getCmdList());
+	particleMgr->drawWithUpdate(dxCom->getCmdList(), playerObj->position);
 
 	additionalDrawParticle();
 }
