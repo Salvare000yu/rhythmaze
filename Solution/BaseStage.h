@@ -143,6 +143,7 @@ protected:
 
 	// ファイルから読み込んだ情報を格納する
 	std::vector<std::vector<MAP_NUM>> mapData;
+	float floorPosY;
 
 #pragma endregion マップ
 
