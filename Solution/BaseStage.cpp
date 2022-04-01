@@ -212,7 +212,7 @@ void BaseStage::updatePlayerPos() {
 
 void BaseStage::updateTime() {
 	const auto nowTime = timer->getNowTime();	// 今の時間
-	float speed = musicBpm * 2;	// beat / min 毎分何拍か(表裏)
+	float speed = musicBpm * 2/*/2*/;	// beat / min 毎分何拍か(表裏)
 	const auto oneBeatTime = timer->getOneBeatTime(speed);	// 一拍の時間を記録
 
 	constexpr float aheadJudgeRange = 0.25f;	// この値分次の拍の始まりが速くなる[0~1]
@@ -226,6 +226,58 @@ void BaseStage::updateTime() {
 		if (playerMoved) {
 			playerMoved = false;
 		} //else combo = 0U;	// 止まっていたらコンボをリセット
+
+		if (frontBeatFlag) {
+			playerObj->scale = XMFLOAT3(playerScale, playerScale, playerScale);
+		} else {
+			const float backScale = playerScale * 0.8f;
+			playerObj->scale = XMFLOAT3(backScale, backScale, backScale);
+		}
+
+		// --------------------
+		// 進めない道を壁にする
+		// --------------------
+		for (UINT y = 0; y < mapData.size(); y++) {
+			for (UINT x = 0; x < mapData[y].size(); x++) {
+				switch (mapData[y][x]) {
+				case MAP_NUM::FRONT_ROAD:
+					if (frontBeatFlag) {
+						mapObj[y][x].position.y = floorPosY;
+						mapObj[y][x].texNum = BOX_TEXNUM::FRONT;
+						mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+					} else {
+						mapObj[y][x].position.y = floorPosY + obj3dScale;
+						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
+						mapObj[y][x].color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
+					}
+					break;
+				case MAP_NUM::BACK_ROAD:
+					if (frontBeatFlag) {
+						mapObj[y][x].position.y = floorPosY + obj3dScale;
+						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
+						mapObj[y][x].color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
+					} else {
+						mapObj[y][x].position.y = floorPosY;
+						mapObj[y][x].texNum = BOX_TEXNUM::BACK;
+						mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+					}
+					break;
+				}
+			}
+		}
+		if (frontBeatFlag) playerObj->color = XMFLOAT4(1, 1, 1, 1);
+		else playerObj->color = XMFLOAT4(0.5, 0.5, 0.5, 1);
+
+
+		// --------------------
+		// 今プレイヤーがいるところは壁にしない
+		// --------------------
+		mapObj[playerMapPos.y][playerMapPos.x].position.y = floorPosY;
+
+		mapObj[playerMapPos.y][playerMapPos.x].color = XMFLOAT4(1, 1, 1, 1);
+
+		if (mapData[playerMapPos.y][playerMapPos.x] == MAP_NUM::FRONT_ROAD) mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::FRONT;
+		else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;
 	}
 
 	const float beatRaito = (nowTime - beatChangeTime) / (float)oneBeatTime;	// 今の拍の進行度[0~1]
@@ -377,6 +429,9 @@ void BaseStage::init() {
 #pragma endregion マップファイル
 
 #pragma region 3Dオブジェクト
+
+#pragma region マップ
+
 	object3dPipelineSet = Object3d::createGraphicsPipeline(dxCom->getDev());
 	backPipelineSet = Object3d::createGraphicsPipeline(dxCom->getDev(), Object3d::BLEND_MODE::ALPHA,
 													   L"Resources/Shaders/backVS.hlsl",
@@ -400,12 +455,17 @@ void BaseStage::init() {
 	model->loadTexture(dxCom->getDev(), boxModelTexPath_back.c_str(), BOX_TEXNUM::BACK);
 	model->loadTexture(dxCom->getDev(), boxModelTexPath_goal.c_str(), BOX_TEXNUM::GOAL);
 
+#pragma endregion マップ
+
+#pragma region 迷路
+
 	constexpr XMFLOAT4 wallCol = XMFLOAT4(0.5f, 0.3f, 0, 1);
 	constexpr XMFLOAT4 backRoadCol = XMFLOAT4(1, 0, 1, 1);
 	constexpr XMFLOAT4 frontRoadCol = XMFLOAT4(0, 1, 1, 1);
 	constexpr XMFLOAT4 goalCol = XMFLOAT4(1, 0, 0, 1);
 
 	constexpr float mapPosY = -150.f;
+	floorPosY = mapPosY;
 
 	for (UINT y = 0; y < mapData.size(); ++y) {
 		mapObj.emplace_back();
@@ -438,6 +498,10 @@ void BaseStage::init() {
 		}
 	}
 
+#pragma endregion 迷路
+
+#pragma region プレイヤー
+
 	constexpr XMFLOAT2 startMapPos = XMFLOAT2(1, 1);
 	playerMapPos = startMapPos;
 
@@ -448,7 +512,8 @@ void BaseStage::init() {
 
 	playerObj.reset(new Object3d(dxCom->getDev(), playerModel.get(), 0));
 
-	const float playerScale = obj3dScale * 0.4f;
+	playerScale = obj3dScale * 0.4f;
+
 	playerObj->scale = { playerScale, playerScale, playerScale };
 
 	playerObj->position = mapObj[startMapPos.y][startMapPos.x].position;
@@ -460,6 +525,8 @@ void BaseStage::init() {
 
 	easeStartPos = playerObj->position;
 	easeEndPos = playerObj->position;
+
+#pragma endregion プレイヤー
 
 #pragma endregion 3Dオブジェクト
 

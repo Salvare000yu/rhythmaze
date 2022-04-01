@@ -83,6 +83,7 @@ protected:
 
 	std::unique_ptr<Model> playerModel;
 	std::unique_ptr<Object3d> playerObj;
+	float playerScale;
 
 	DirectX::XMFLOAT2 playerMapPos;
 
@@ -143,6 +144,7 @@ protected:
 
 	// ファイルから読み込んだ情報を格納する
 	std::vector<std::vector<MAP_NUM>> mapData;
+	float floorPosY;
 
 #pragma endregion マップ
 

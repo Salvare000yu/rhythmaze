@@ -108,10 +108,10 @@ void StageSelect::update() {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
 	}
 
-	constexpr auto up = DIK_W;
-	constexpr auto down = DIK_S;
-	constexpr auto right = DIK_D;
-	constexpr auto left = DIK_A;
+	constexpr auto up = DIK_UP;
+	constexpr auto down = DIK_DOWN;
+	constexpr auto right = DIK_RIGHT;
+	constexpr auto left = DIK_LEFT;
 
 	if (input->triggerKey(down) || input->triggerKey(up)
 	   || input->triggerKey(right) || input->triggerKey(left)) {
@@ -240,7 +240,7 @@ void StageSelect::update() {
 		}
 	}
 
-	debugText.Print(spCom, "STAGE SELECT\n\nWASD : MOVE\nENTER : SELECT\n\nR : BACK_TITLE", 0, 0);
+	debugText.Print(spCom, "STAGE SELECT\n\nARROW : MOVE\nENTER : SELECT\n\nR : BACK_TITLE", 0, 0);
 }
 
 void StageSelect::draw() {
