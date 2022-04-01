@@ -83,6 +83,7 @@ protected:
 
 	std::unique_ptr<Model> playerModel;
 	std::unique_ptr<Object3d> playerObj;
+	float playerScale;
 
 	DirectX::XMFLOAT2 playerMapPos;
 

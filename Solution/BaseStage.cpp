@@ -212,7 +212,7 @@ void BaseStage::updatePlayerPos() {
 
 void BaseStage::updateTime() {
 	const auto nowTime = timer->getNowTime();	// 今の時間
-	float speed = musicBpm * 2;	// beat / min 毎分何拍か(表裏)
+	float speed = musicBpm * 2/*/2*/;	// beat / min 毎分何拍か(表裏)
 	const auto oneBeatTime = timer->getOneBeatTime(speed);	// 一拍の時間を記録
 
 	constexpr float aheadJudgeRange = 0.25f;	// この値分次の拍の始まりが速くなる[0~1]
@@ -226,6 +226,13 @@ void BaseStage::updateTime() {
 		if (playerMoved) {
 			playerMoved = false;
 		} //else combo = 0U;	// 止まっていたらコンボをリセット
+
+		if (frontBeatFlag) {
+			playerObj->scale = XMFLOAT3(playerScale, playerScale, playerScale);
+		} else {
+			const float backScale = playerScale * 0.8f;
+			playerObj->scale = XMFLOAT3(backScale, backScale, backScale);
+		}
 
 		// --------------------
 		// 進めない道を壁にする
@@ -258,6 +265,8 @@ void BaseStage::updateTime() {
 				}
 			}
 		}
+		if (frontBeatFlag) playerObj->color = XMFLOAT4(1, 1, 1, 1);
+		else playerObj->color = XMFLOAT4(0.5, 0.5, 0.5, 1);
 
 
 		// --------------------
@@ -503,7 +512,8 @@ void BaseStage::init() {
 
 	playerObj.reset(new Object3d(dxCom->getDev(), playerModel.get(), 0));
 
-	const float playerScale = obj3dScale * 0.4f;
+	playerScale = obj3dScale * 0.4f;
+
 	playerObj->scale = { playerScale, playerScale, playerScale };
 
 	playerObj->position = mapObj[startMapPos.y][startMapPos.x].position;
