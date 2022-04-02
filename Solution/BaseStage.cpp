@@ -93,7 +93,7 @@ void BaseStage::updatePlayerPos() {
 		bool goalFlag = false;
 
 		// 移動可能なら(まだ移動しておらず、かつ移動が許されているなら)
-		if (!playerMoved && movableFlag) {
+		if (!playerMoved) {
 
 			uint8_t moveDir = 0u;
 
@@ -203,10 +203,8 @@ void BaseStage::updatePlayerPos() {
 
 		playerObj->position = easePos(easeStartPos, easeEndPos, easeTimeRaito, easeAllTime);
 
+		//指定した時間が過ぎたらイージング終了
 		if (easeTimeRaito >= 1.f) playerEasing = false;
-
-		// todo エフェクトの位置をプレイヤーの移動に合わせる
-		//			-> 毎フレーム加算式から現在値補間式に変える
 	}
 }
 
@@ -237,6 +235,8 @@ void BaseStage::updateTime() {
 		// --------------------
 		// 進めない道を壁にする
 		// --------------------
+		constexpr auto wallCol = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
+		constexpr auto defColor = XMFLOAT4(1, 1, 1, 1);
 		for (UINT y = 0; y < mapData.size(); y++) {
 			for (UINT x = 0; x < mapData[y].size(); x++) {
 				switch (mapData[y][x]) {
@@ -244,28 +244,28 @@ void BaseStage::updateTime() {
 					if (frontBeatFlag) {
 						mapObj[y][x].position.y = floorPosY;
 						mapObj[y][x].texNum = BOX_TEXNUM::FRONT;
-						mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+						mapObj[y][x].color = defColor;
 					} else {
 						mapObj[y][x].position.y = floorPosY + obj3dScale;
 						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-						mapObj[y][x].color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
+						mapObj[y][x].color = wallCol;
 					}
 					break;
 				case MAP_NUM::BACK_ROAD:
 					if (frontBeatFlag) {
 						mapObj[y][x].position.y = floorPosY + obj3dScale;
 						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-						mapObj[y][x].color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
+						mapObj[y][x].color = wallCol;
 					} else {
 						mapObj[y][x].position.y = floorPosY;
 						mapObj[y][x].texNum = BOX_TEXNUM::BACK;
-						mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+						mapObj[y][x].color = defColor;
 					}
 					break;
 				}
 			}
 		}
-		if (frontBeatFlag) playerObj->color = XMFLOAT4(1, 1, 1, 1);
+		if (frontBeatFlag) playerObj->color = defColor;
 		else playerObj->color = XMFLOAT4(0.5, 0.5, 0.5, 1);
 
 
@@ -274,7 +274,7 @@ void BaseStage::updateTime() {
 		// --------------------
 		mapObj[playerMapPos.y][playerMapPos.x].position.y = floorPosY;
 
-		mapObj[playerMapPos.y][playerMapPos.x].color = XMFLOAT4(1, 1, 1, 1);
+		mapObj[playerMapPos.y][playerMapPos.x].color = defColor;
 
 		if (mapData[playerMapPos.y][playerMapPos.x] == MAP_NUM::FRONT_ROAD) mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::FRONT;
 		else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;
@@ -284,16 +284,16 @@ void BaseStage::updateTime() {
 	constexpr float movableRaitoMin = 0.625f, movableRaitoMax = 1.f - aheadJudgeRange;	// 移動できない時間の範囲
 
 	// この範囲内なら移動はできない
-	movableFlag = !(movableRaitoMin < beatRaito&& beatRaito < movableRaitoMax);
+	//movableFlag = !(movableRaitoMin < beatRaito&& beatRaito < movableRaitoMax);
 
-	debugText.Print(spriteCommon, "O         N\nK         G", 0, debugText.fontHeight,
+	debugText.Print(spriteCommon, "X         X", 0, debugText.fontHeight,
 					1.f, XMFLOAT4(1, 1, 1, 0.5f));
 
 	debugText.Print(spriteCommon,
-					movableFlag == true ? "O\nK" : "N\nG",
+					"X",
 					beatRaito * 10.f * debugText.fontWidth, debugText.fontHeight,
 					1.f,
-					XMFLOAT4(1, (float)movableFlag, 1, 1));
+					XMFLOAT4(1, 1, 1, 1));
 }
 
 void BaseStage::createParticle(const DirectX::XMFLOAT3 pos,

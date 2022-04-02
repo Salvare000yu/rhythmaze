@@ -101,7 +101,6 @@ protected:
 	Time::timeType beatChangeTime = 0;
 
 	UINT combo = 0U;
-	bool movableFlag = true;
 
 	bool playerMoved = false;
 	bool missFlag = false;

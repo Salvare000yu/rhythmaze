@@ -219,7 +219,7 @@ void StageSelect::update() {
 			selectBack[selectSpriteNum].SpriteTransferVertexBuffer(spCom);
 		}
 	} else {
-		// todo 選んだシーンごとに遷移シーンを分ける
+		// undone 選んだシーンごとに遷移シーンを分ける
 		if (input->triggerKey(DIK_SPACE)) {
 			switch (SELECT) {
 			case StageSelect::STAGE_SELECT::EXPLANATION:
