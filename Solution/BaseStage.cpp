@@ -634,8 +634,6 @@ void BaseStage::draw() {
 void BaseStage::drawObj3d() {
 	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), object3dPipelineSet);
 
-	backObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
-
 	for (UINT y = 0; y < mapData.size(); ++y) {
 		for (UINT x = 0; x < mapData[y].size(); ++x) {
 			mapObj[y][x].drawWithUpdate(camera->getViewMatrix(), dxCom);
@@ -644,6 +642,9 @@ void BaseStage::drawObj3d() {
 	playerObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 
 	additionalDrawObj3d();
+
+	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), backPipelineSet);
+	backObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 }
 
 void BaseStage::drawParticle() {
