@@ -9,6 +9,8 @@
 
 #include "DirectXCommon.h"
 
+#include "SceneManager.h"
+
 class StageSelect :
 	public GameScene {
 
@@ -18,8 +20,7 @@ class StageSelect :
 	Sprite::SpriteCommon spCom;
 	// スプライト共通テクスチャ読み込み
 	enum TEX_NUM { EX, P1, P2, P3, BACK };
-	enum class STAGE_SELECT : USHORT { EXPLANATION, STAGE1, STAGE2, STAGE3 };
-	STAGE_SELECT SELECT = STAGE_SELECT::EXPLANATION;
+	SCENE_NUM SELECT = SCENE_NUM::EXPLANATION;
 
 	// --------------------
 	// スプライト個別

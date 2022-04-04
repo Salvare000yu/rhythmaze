@@ -7,6 +7,7 @@
 #include "Explanation.h"
 #include "Stage2.h"
 #include "Stage3.h"
+#include "Stage4.h"
 
 #include "Input.h"
 
@@ -40,7 +41,7 @@ void SceneManager::update() {
 		case SCENE_NUM::TITLE:
 			nowScene = new TitleScene();
 			break;
-		case SCENE_NUM::PLAY:
+		case SCENE_NUM::STAGE1:
 			nowScene = new PlayScene();
 			break;
 		case SCENE_NUM::END:
@@ -58,6 +59,8 @@ void SceneManager::update() {
 		case SCENE_NUM::STAGE3:
 			nowScene = new Stage3();
 			break;
+		case SCENE_NUM::STAGE4:
+			nowScene = new Stage4();
 		}
 
 		nextScene = SCENE_NUM::NONE;	//次シーンの情報をクリア
