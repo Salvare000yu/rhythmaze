@@ -56,6 +56,8 @@ protected:
 
 #pragma region スプライト
 	SpriteCommon spriteCommon;
+
+	std::unique_ptr <Sprite> circleSprite;
 #pragma endregion スプライト
 
 #pragma region デバッグテキスト
