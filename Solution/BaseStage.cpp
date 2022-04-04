@@ -300,13 +300,15 @@ void BaseStage::updateTime() {
 
 
 	constexpr float circleScaleMin = 0.3f;
-	const float circleScale = beatRaito * (1.f - circleScaleMin) + circleScaleMin;
+	float circleScale = beatRaito * (1.f - circleScaleMin) + circleScaleMin;
+	if (!frontBeatFlag) circleScale = 1.f - circleScale;
 
 	circleSprite->size = XMFLOAT2(circleSprite->texSize.x * circleScale,
 								  circleSprite->texSize.y * circleScale);
 
 	constexpr float circleColMax = 1.f - circleScaleMin;
 	circleSprite->color.w = circleColMax - beatRaito * circleColMax;
+	if (!frontBeatFlag) circleSprite->color.w = 1.f - circleSprite->color.w;
 
 	circleSprite->SpriteTransferVertexBuffer(spriteCommon);
 }
