@@ -4,9 +4,11 @@
 // undone シーンを追加する際は此処にシーン管理番号を追加する
 enum class SCENE_NUM : unsigned short {
 	NONE,
-	TITLE, SELECT, EXPLANATION, PLAY, END,
+	TITLE, SELECT, EXPLANATION, END,
+	STAGE1,
 	STAGE2,
-	STAGE3
+	STAGE3,
+	STAGE4
 };
 
 class SceneManager

@@ -119,9 +119,9 @@ void StageSelect::update() {
 		bool changeFlag = false;
 		uint8_t preSelectSpriteNum = 0u, selectSpriteNum = 0u;
 		switch (SELECT) {
-		case STAGE_SELECT::EXPLANATION:
+		case SCENE_NUM::EXPLANATION:
 			if (input->triggerKey(down)) {
-				SELECT = STAGE_SELECT::STAGE1;
+				SELECT = SCENE_NUM::STAGE1;
 				preSelectSpriteNum = 0;
 				selectSpriteNum = 1;
 
@@ -129,21 +129,21 @@ void StageSelect::update() {
 			}
 			break;
 
-		case STAGE_SELECT::STAGE1:
+		case SCENE_NUM::STAGE1:
 			if (input->triggerKey(right)) {
-				SELECT = STAGE_SELECT::STAGE2;
+				SELECT = SCENE_NUM::STAGE2;
 				preSelectSpriteNum = 1;
 				selectSpriteNum = 2;
 
 				changeFlag = true;
 			} else if (input->triggerKey(left)) {
-				SELECT = STAGE_SELECT::STAGE3;
+				SELECT = SCENE_NUM::STAGE3;
 				preSelectSpriteNum = 1;
 				selectSpriteNum = 3;
 
 				changeFlag = true;
 			} else if (input->triggerKey(up)) {
-				SELECT = STAGE_SELECT::EXPLANATION;
+				SELECT = SCENE_NUM::EXPLANATION;
 				preSelectSpriteNum = 1;
 				selectSpriteNum = 0;
 
@@ -151,21 +151,21 @@ void StageSelect::update() {
 			}
 			break;
 
-		case STAGE_SELECT::STAGE2:
+		case SCENE_NUM::STAGE2:
 			if (input->triggerKey(right)) {
-				SELECT = STAGE_SELECT::STAGE3;
+				SELECT = SCENE_NUM::STAGE3;
 				preSelectSpriteNum = 2;
 				selectSpriteNum = 3;
 
 				changeFlag = true;
 			} else if (input->triggerKey(left)) {
-				SELECT = STAGE_SELECT::STAGE1;
+				SELECT = SCENE_NUM::STAGE1;
 				preSelectSpriteNum = 2;
 				selectSpriteNum = 1;
 
 				changeFlag = true;
 			} else if (input->triggerKey(up)) {
-				SELECT = STAGE_SELECT::EXPLANATION;
+				SELECT = SCENE_NUM::EXPLANATION;
 				preSelectSpriteNum = 2;
 				selectSpriteNum = 0;
 
@@ -173,21 +173,21 @@ void StageSelect::update() {
 			}
 			break;
 
-		case STAGE_SELECT::STAGE3:
+		case SCENE_NUM::STAGE3:
 			if (input->triggerKey(right)) {
-				SELECT = STAGE_SELECT::STAGE1;
+				SELECT = SCENE_NUM::STAGE1;
 				preSelectSpriteNum = 3;
 				selectSpriteNum = 1;
 
 				changeFlag = true;
 			} else if (input->triggerKey(left)) {
-				SELECT = STAGE_SELECT::STAGE2;
+				SELECT = SCENE_NUM::STAGE2;
 				preSelectSpriteNum = 3;
 				selectSpriteNum = 2;
 
 				changeFlag = true;
 			} else if (input->triggerKey(up)) {
-				SELECT = STAGE_SELECT::EXPLANATION;
+				SELECT = SCENE_NUM::EXPLANATION;
 				preSelectSpriteNum = 3;
 				selectSpriteNum = 0;
 
@@ -219,28 +219,17 @@ void StageSelect::update() {
 			selectBack[selectSpriteNum].SpriteTransferVertexBuffer(spCom);
 		}
 	} else {
-		// todo 選んだシーンごとに遷移シーンを分ける
+	// スペースを押したら選んだシーンに移動
 		if (input->triggerKey(DIK_SPACE)) {
-			switch (SELECT) {
-			case StageSelect::STAGE_SELECT::EXPLANATION:
-				SceneManager::getInstange()->changeScene(SCENE_NUM::EXPLANATION);
-				break;
-			case StageSelect::STAGE_SELECT::STAGE1:
-				SceneManager::getInstange()->changeScene(SCENE_NUM::PLAY);
-				break;
-			case StageSelect::STAGE_SELECT::STAGE2:
-				SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE2);
-				break;
-			case StageSelect::STAGE_SELECT::STAGE3:
-				SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE3);
-				break;
-			default:
-				break;
-			}
+			SceneManager::getInstange()->changeScene(SELECT);
 		}
 	}
 
-	debugText.Print(spCom, "STAGE SELECT\n\nARROW : MOVE\nENTER : SELECT\n\nR : BACK_TITLE", 0, 0);
+
+	// todo STAGE4もほかのステージ同様に選べるようにする
+	if (input->triggerKey(DIK_4)) SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE4);
+
+	debugText.Print(spCom, "STAGE SELECT\n\nARROW : MOVE\nENTER : SELECT\n\nR : BACK_TITLE\n\n4 : START STAGE4", 0, 0);
 }
 
 void StageSelect::draw() {

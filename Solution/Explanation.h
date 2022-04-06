@@ -12,6 +12,7 @@ class Explanation:
 	// デバッグテキスト
 	// --------------------
 	Sprite::SpriteCommon spCom;
+	Sprite* sprite;
 	DebugText debugText{};
 	// デバッグテキスト用のテクスチャ番号を指定
 	const UINT debugTextTexNumber = Sprite::spriteSRVCount - 1;

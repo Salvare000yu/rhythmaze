@@ -56,6 +56,8 @@ protected:
 
 #pragma region スプライト
 	SpriteCommon spriteCommon;
+
+	std::unique_ptr <Sprite> circleSprite;
 #pragma endregion スプライト
 
 #pragma region デバッグテキスト
@@ -101,7 +103,6 @@ protected:
 	Time::timeType beatChangeTime = 0;
 
 	UINT combo = 0U;
-	bool movableFlag = true;
 
 	bool playerMoved = false;
 	bool missFlag = false;

@@ -138,6 +138,9 @@
     <ClCompile Include="Stage3.cpp">
       <Filter>Sceme\Stage</Filter>
     </ClCompile>
+    <ClCompile Include="Stage4.cpp">
+      <Filter>Sceme\Stage</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Input.h">
@@ -222,6 +225,9 @@
       <Filter>Sceme\Stage</Filter>
     </ClInclude>
     <ClInclude Include="Stage3.h">
+      <Filter>Sceme\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage4.h">
       <Filter>Sceme\Stage</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,6 +9,11 @@
 
 using namespace DirectX;
 
+namespace {
+	constexpr float wallColFL = 0.3f;
+	constexpr auto wallCol = XMFLOAT4(wallColFL, wallColFL, wallColFL, 1);
+}
+
 DirectX::XMFLOAT3 BaseStage::easePos(const DirectX::XMFLOAT3 startPos,
 									 const DirectX::XMFLOAT3 endPos,
 									 const float timeRaito,
@@ -93,7 +98,7 @@ void BaseStage::updatePlayerPos() {
 		bool goalFlag = false;
 
 		// 移動可能なら(まだ移動しておらず、かつ移動が許されているなら)
-		if (!playerMoved && movableFlag) {
+		if (!playerMoved) {
 
 			uint8_t moveDir = 0u;
 
@@ -203,10 +208,8 @@ void BaseStage::updatePlayerPos() {
 
 		playerObj->position = easePos(easeStartPos, easeEndPos, easeTimeRaito, easeAllTime);
 
+		//指定した時間が過ぎたらイージング終了
 		if (easeTimeRaito >= 1.f) playerEasing = false;
-
-		// todo エフェクトの位置をプレイヤーの移動に合わせる
-		//			-> 毎フレーム加算式から現在値補間式に変える
 	}
 }
 
@@ -237,6 +240,9 @@ void BaseStage::updateTime() {
 		// --------------------
 		// 進めない道を壁にする
 		// --------------------
+		constexpr auto defColor = XMFLOAT4(1, 1, 1, 1);
+		constexpr auto frontColor = XMFLOAT4(0, 1, 0, 1);
+		constexpr auto backColor = XMFLOAT4(1, 0.5f, 1, 1);
 		for (UINT y = 0; y < mapData.size(); y++) {
 			for (UINT x = 0; x < mapData[y].size(); x++) {
 				switch (mapData[y][x]) {
@@ -244,29 +250,34 @@ void BaseStage::updateTime() {
 					if (frontBeatFlag) {
 						mapObj[y][x].position.y = floorPosY;
 						mapObj[y][x].texNum = BOX_TEXNUM::FRONT;
-						mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+						mapObj[y][x].color = defColor;
 					} else {
 						mapObj[y][x].position.y = floorPosY + obj3dScale;
 						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-						mapObj[y][x].color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
+						mapObj[y][x].color = wallCol;
 					}
 					break;
 				case MAP_NUM::BACK_ROAD:
 					if (frontBeatFlag) {
 						mapObj[y][x].position.y = floorPosY + obj3dScale;
 						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-						mapObj[y][x].color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
+						mapObj[y][x].color = wallCol;
 					} else {
 						mapObj[y][x].position.y = floorPosY;
 						mapObj[y][x].texNum = BOX_TEXNUM::BACK;
-						mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+						mapObj[y][x].color = defColor;
 					}
 					break;
 				}
 			}
 		}
-		if (frontBeatFlag) playerObj->color = XMFLOAT4(1, 1, 1, 1);
-		else playerObj->color = XMFLOAT4(0.5, 0.5, 0.5, 1);
+		if (frontBeatFlag) {
+			playerObj->color = defColor;
+			circleSprite->color = frontColor;
+		} else {
+			playerObj->color = XMFLOAT4(0.5, 0.5, 0.5, 1);
+			circleSprite->color = backColor;
+		}
 
 
 		// --------------------
@@ -274,7 +285,7 @@ void BaseStage::updateTime() {
 		// --------------------
 		mapObj[playerMapPos.y][playerMapPos.x].position.y = floorPosY;
 
-		mapObj[playerMapPos.y][playerMapPos.x].color = XMFLOAT4(1, 1, 1, 1);
+		mapObj[playerMapPos.y][playerMapPos.x].color = defColor;
 
 		if (mapData[playerMapPos.y][playerMapPos.x] == MAP_NUM::FRONT_ROAD) mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::FRONT;
 		else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;
@@ -284,16 +295,30 @@ void BaseStage::updateTime() {
 	constexpr float movableRaitoMin = 0.625f, movableRaitoMax = 1.f - aheadJudgeRange;	// 移動できない時間の範囲
 
 	// この範囲内なら移動はできない
-	movableFlag = !(movableRaitoMin < beatRaito&& beatRaito < movableRaitoMax);
+	//movableFlag = !(movableRaitoMin < beatRaito&& beatRaito < movableRaitoMax);
 
-	debugText.Print(spriteCommon, "O         N\nK         G", 0, debugText.fontHeight,
+	debugText.Print(spriteCommon, "X         X", 0, debugText.fontHeight,
 					1.f, XMFLOAT4(1, 1, 1, 0.5f));
 
 	debugText.Print(spriteCommon,
-					movableFlag == true ? "O\nK" : "N\nG",
+					"X",
 					beatRaito * 10.f * debugText.fontWidth, debugText.fontHeight,
 					1.f,
-					XMFLOAT4(1, (float)movableFlag, 1, 1));
+					XMFLOAT4(1, 1, 1, 1));
+
+
+	constexpr float circleScaleMin = 0.3f;
+	float circleScale = beatRaito * (1.f - circleScaleMin) + circleScaleMin;
+	if (!frontBeatFlag) circleScale = 1.f - circleScale, circleScale = 0;
+
+	circleSprite->size = XMFLOAT2(circleSprite->texSize.x * circleScale,
+								  circleSprite->texSize.y * circleScale);
+
+	constexpr float circleColMax = 0.5f;
+	circleSprite->color.w = circleColMax - beatRaito * circleColMax;
+	if (!frontBeatFlag) circleSprite->color.w = 1.f - circleSprite->color.w;
+
+	circleSprite->SpriteTransferVertexBuffer(spriteCommon);
 }
 
 void BaseStage::createParticle(const DirectX::XMFLOAT3 pos,
@@ -416,6 +441,18 @@ void BaseStage::init() {
 							  L"Resources/debugfont.png",
 							  DirectXCommon::getInstance()->getDev());
 
+	Sprite::commonLoadTexture(spriteCommon,
+							  0,
+							  L"Resources/circle.png",
+							   DirectXCommon::getInstance()->getDev());
+
+	circleSprite.reset(new Sprite());
+	circleSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
+						 0, spriteCommon);
+	circleSprite->position.x = WinAPI::window_width / 2;
+	circleSprite->position.y = WinAPI::window_height / 2;
+
+
 	debugText.Initialize(dxCom->getDev(),
 						 WinAPI::window_width, WinAPI::window_height,
 						 debugTextTexNumber,
@@ -459,7 +496,6 @@ void BaseStage::init() {
 
 #pragma region 迷路
 
-	constexpr XMFLOAT4 wallCol = XMFLOAT4(0.5f, 0.3f, 0, 1);
 	constexpr XMFLOAT4 backRoadCol = XMFLOAT4(1, 0, 1, 1);
 	constexpr XMFLOAT4 frontRoadCol = XMFLOAT4(0, 1, 1, 1);
 	constexpr XMFLOAT4 goalCol = XMFLOAT4(1, 0, 0, 1);
@@ -634,8 +670,6 @@ void BaseStage::draw() {
 void BaseStage::drawObj3d() {
 	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), object3dPipelineSet);
 
-	backObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
-
 	for (UINT y = 0; y < mapData.size(); ++y) {
 		for (UINT x = 0; x < mapData[y].size(); ++x) {
 			mapObj[y][x].drawWithUpdate(camera->getViewMatrix(), dxCom);
@@ -644,6 +678,9 @@ void BaseStage::drawObj3d() {
 	playerObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 
 	additionalDrawObj3d();
+
+	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), backPipelineSet);
+	backObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 }
 
 void BaseStage::drawParticle() {
@@ -656,6 +693,7 @@ void BaseStage::drawParticle() {
 
 void BaseStage::drawSprite() {
 	Sprite::drawStart(spriteCommon, dxCom->getCmdList());
+	circleSprite->drawWithUpdate(dxCom, spriteCommon);
 	// スプライト描画
 	additionalDrawSprite();
 
