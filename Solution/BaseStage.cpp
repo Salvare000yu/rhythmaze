@@ -235,29 +235,31 @@ void BaseStage::updateTime() {
 		// --------------------
 		// 進めない道を壁にする
 		// --------------------
-		constexpr auto wallCol = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
+		constexpr auto wallCol = XMFLOAT4(0.3f, 0.3f, 0.3f, 1);
 		constexpr auto defColor = XMFLOAT4(1, 1, 1, 1);
+		constexpr auto frontColor = XMFLOAT4(0, 1, 0, 1);
+		constexpr auto backColor = XMFLOAT4(1, 0.5f, 1, 1);
 		for (UINT y = 0; y < mapData.size(); y++) {
 			for (UINT x = 0; x < mapData[y].size(); x++) {
 				switch (mapData[y][x]) {
 				case MAP_NUM::FRONT_ROAD:
 					if (frontBeatFlag) {
-						mapObj[y][x].position.y = floorPosY;
+						//mapObj[y][x].position.y = floorPosY;
 						mapObj[y][x].texNum = BOX_TEXNUM::FRONT;
 						mapObj[y][x].color = defColor;
 					} else {
-						mapObj[y][x].position.y = floorPosY + obj3dScale;
+						//mapObj[y][x].position.y = floorPosY + obj3dScale;
 						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
 						mapObj[y][x].color = wallCol;
 					}
 					break;
 				case MAP_NUM::BACK_ROAD:
 					if (frontBeatFlag) {
-						mapObj[y][x].position.y = floorPosY + obj3dScale;
+						//mapObj[y][x].position.y = floorPosY + obj3dScale;
 						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
 						mapObj[y][x].color = wallCol;
 					} else {
-						mapObj[y][x].position.y = floorPosY;
+						//mapObj[y][x].position.y = floorPosY;
 						mapObj[y][x].texNum = BOX_TEXNUM::BACK;
 						mapObj[y][x].color = defColor;
 					}
@@ -265,19 +267,24 @@ void BaseStage::updateTime() {
 				}
 			}
 		}
-		if (frontBeatFlag) playerObj->color = defColor;
-		else playerObj->color = XMFLOAT4(0.5, 0.5, 0.5, 1);
+		if (frontBeatFlag) {
+			playerObj->color = defColor;
+			circleSprite->color = frontColor;
+		} else {
+			playerObj->color = XMFLOAT4(0.5, 0.5, 0.5, 1);
+			circleSprite->color = backColor;
+		}
 
 
 		// --------------------
 		// 今プレイヤーがいるところは壁にしない
 		// --------------------
-		mapObj[playerMapPos.y][playerMapPos.x].position.y = floorPosY;
+		/*mapObj[playerMapPos.y][playerMapPos.x].position.y = floorPosY;
 
 		mapObj[playerMapPos.y][playerMapPos.x].color = defColor;
 
 		if (mapData[playerMapPos.y][playerMapPos.x] == MAP_NUM::FRONT_ROAD) mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::FRONT;
-		else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;
+		else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;*/
 	}
 
 	const float beatRaito = (nowTime - beatChangeTime) / (float)oneBeatTime;	// 今の拍の進行度[0~1]
@@ -294,6 +301,20 @@ void BaseStage::updateTime() {
 					beatRaito * 10.f * debugText.fontWidth, debugText.fontHeight,
 					1.f,
 					XMFLOAT4(1, 1, 1, 1));
+
+
+	constexpr float circleScaleMin = 0.3f;
+	float circleScale = beatRaito * (1.f - circleScaleMin) + circleScaleMin;
+	if (!frontBeatFlag) circleScale = 1.f - circleScale, circleScale = 0;
+
+	circleSprite->size = XMFLOAT2(circleSprite->texSize.x * circleScale,
+								  circleSprite->texSize.y * circleScale);
+
+	constexpr float circleColMax = 0.5f;
+	circleSprite->color.w = circleColMax - beatRaito * circleColMax;
+	if (!frontBeatFlag) circleSprite->color.w = 1.f - circleSprite->color.w;
+
+	circleSprite->SpriteTransferVertexBuffer(spriteCommon);
 }
 
 void BaseStage::createParticle(const DirectX::XMFLOAT3 pos,
@@ -415,6 +436,18 @@ void BaseStage::init() {
 							  debugTextTexNumber,
 							  L"Resources/debugfont.png",
 							  DirectXCommon::getInstance()->getDev());
+
+	Sprite::commonLoadTexture(spriteCommon,
+							  0,
+							  L"Resources/circle.png",
+							   DirectXCommon::getInstance()->getDev());
+
+	circleSprite.reset(new Sprite());
+	circleSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
+						 0, spriteCommon);
+	circleSprite->position.x = WinAPI::window_width / 2;
+	circleSprite->position.y = WinAPI::window_height / 2;
+
 
 	debugText.Initialize(dxCom->getDev(),
 						 WinAPI::window_width, WinAPI::window_height,
@@ -657,6 +690,7 @@ void BaseStage::drawParticle() {
 
 void BaseStage::drawSprite() {
 	Sprite::drawStart(spriteCommon, dxCom->getCmdList());
+	circleSprite->drawWithUpdate(dxCom, spriteCommon);
 	// スプライト描画
 	additionalDrawSprite();
 
