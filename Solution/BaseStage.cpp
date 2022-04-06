@@ -301,7 +301,7 @@ void BaseStage::updateTime() {
 
 	constexpr float circleScaleMin = 0.3f;
 	float circleScale = beatRaito * (1.f - circleScaleMin) + circleScaleMin;
-	if (!frontBeatFlag) circleScale = 1.f - circleScale;
+	if (!frontBeatFlag) circleScale = 1.f - circleScale, circleScale = 0;
 
 	circleSprite->size = XMFLOAT2(circleSprite->texSize.x * circleScale,
 								  circleSprite->texSize.y * circleScale);
