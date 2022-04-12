@@ -71,11 +71,8 @@ void BaseStage::updateCamera() {
 
 bool BaseStage::goal() {
 	// コンボ数がクリア条件に達していたら
-	if (combo >= clearCombo) {
-		SceneManager::getInstange()->goal(beatChangeNum, combo, true);
-		return true;
-	}
-	return false;
+	SceneManager::getInstange()->goal(beatChangeNum, combo, true);
+	return true;
 }
 
 void BaseStage::timeOut() {
@@ -619,7 +616,7 @@ void BaseStage::update() {
 
 	debugText.formatPrint(spriteCommon, 0, 0, 2.f,
 						  dbFontCol,
-						  "combo : %u / %u", combo, clearCombo);
+						  "combo : %u", combo);
 
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 2, 2.f,
 						  dbFontCol,

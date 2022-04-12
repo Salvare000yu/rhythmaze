@@ -36,7 +36,6 @@ void PlayScene::additionalInit() {
 
 	bgmBolume = 0.4f;
 
-	clearCombo = 1u;
 	clearCount = 250u;
 
 	spriteInit();

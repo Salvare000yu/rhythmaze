@@ -15,13 +15,13 @@ void EndScene::init() {
 
 	debugText.Initialize(DirectXCommon::getInstance()->getDev(),
 						 WinAPI::window_width, WinAPI::window_height,
-						debugTextTexNumber, spCom);
+						 debugTextTexNumber, spCom);
 
 	if (SceneManager::getInstange()->getAchieving()) {
 		snprintf(clearinfiStr, _countof(clearinfiStr),
-				 "clear count : %u\nclear combo : %u",
-				 SceneManager::getInstange()->getClearHalfBeat(),
-				 SceneManager::getInstange()->getClearCombo());
+				 "clear combo : %u\nclear count : %u",
+				 SceneManager::getInstange()->getClearCombo(),
+				 SceneManager::getInstange()->getClearHalfBeat());
 	} else {
 		snprintf(clearinfiStr, _countof(clearinfiStr),
 				 "failed!\ncount : %u\ncombo : %u",

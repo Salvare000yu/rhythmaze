@@ -151,7 +151,6 @@ protected:
 
 #pragma region クリア条件
 	unsigned clearCount = 250u;
-	unsigned clearCombo = 1u;
 #pragma endregion クリア条件
 
 #pragma region イージング
