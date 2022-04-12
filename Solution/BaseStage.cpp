@@ -12,6 +12,8 @@ using namespace DirectX;
 namespace {
 	constexpr float wallColFL = 0.3f;
 	constexpr auto wallCol = XMFLOAT4(wallColFL, wallColFL, wallColFL, 1);
+	constexpr auto noRoadWallCol = wallCol;
+	constexpr auto roadWallCol = wallCol;
 }
 
 DirectX::XMFLOAT3 BaseStage::easePos(const DirectX::XMFLOAT3 startPos,
@@ -251,14 +253,14 @@ void BaseStage::updateTime() {
 					} else {
 						mapObj[y][x].position.y = floorPosY + obj3dScale;
 						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-						mapObj[y][x].color = wallCol;
+						mapObj[y][x].color = roadWallCol;
 					}
 					break;
 				case MAP_NUM::BACK_ROAD:
 					if (frontBeatFlag) {
 						mapObj[y][x].position.y = floorPosY + obj3dScale;
 						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-						mapObj[y][x].color = wallCol;
+						mapObj[y][x].color = roadWallCol;
 					} else {
 						mapObj[y][x].position.y = floorPosY;
 						mapObj[y][x].texNum = BOX_TEXNUM::BACK;
@@ -504,7 +506,7 @@ void BaseStage::init() {
 			case MAP_NUM::WALL:
 				mapObj[y][x].position.y += obj3dScale;
 				mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-				mapObj[y][x].color = XMFLOAT4(0.25f, 0.25f, 0.25f, 1);
+				mapObj[y][x].color = noRoadWallCol;
 				break;
 			case MAP_NUM::FRONT_ROAD:
 				mapObj[y][x].texNum = BOX_TEXNUM::FRONT;
@@ -586,6 +588,8 @@ void BaseStage::init() {
 }
 
 void BaseStage::update() {
+	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
+
 	// “V‹…‰ñ“]
 	backObj->rotation.y += 0.1f;
 
