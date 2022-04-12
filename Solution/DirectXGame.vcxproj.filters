@@ -141,6 +141,15 @@
     <ClCompile Include="Stage4.cpp">
       <Filter>Sceme\Stage</Filter>
     </ClCompile>
+    <ClCompile Include="Stage5.cpp">
+      <Filter>Sceme\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage6.cpp">
+      <Filter>Sceme\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage7.cpp">
+      <Filter>Sceme\Stage</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Input.h">
@@ -228,6 +237,15 @@
       <Filter>Sceme\Stage</Filter>
     </ClInclude>
     <ClInclude Include="Stage4.h">
+      <Filter>Sceme\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage5.h">
+      <Filter>Sceme\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage6.h">
+      <Filter>Sceme\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage7.h">
       <Filter>Sceme\Stage</Filter>
     </ClInclude>
   </ItemGroup>

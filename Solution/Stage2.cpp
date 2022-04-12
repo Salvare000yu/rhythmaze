@@ -25,14 +25,15 @@ void Stage2::pathInit() {
 
 	//effectTexPath = L"Resources/effect1.png";
 
-	bgmFilePath = "Resources/Music/mmc_138_BGM3.wav";
+	bgmFilePath = "Resources/Music/mmc_125_BGM2.wav";
 
 	//particleSeFilePath = "Resources/SE/Sys_Set03-click.wav";
 }
 
 // ’Ç‰Á‚Å‰Šú‰»‚ª•K—v‚È‚ç‚±‚ÌŠÖ”‚Ì’†‚É‘‚­
 void Stage2::additionalInit() {
-	musicBpm = 138.f;
+	musicBpm = 125;
+
 	bgmBolume = 0.4f;
 
 	clearCombo = 2u;
