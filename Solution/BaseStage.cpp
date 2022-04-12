@@ -71,11 +71,8 @@ void BaseStage::updateCamera() {
 
 bool BaseStage::goal() {
 	// コンボ数がクリア条件に達していたら
-	if (combo >= clearCombo) {
-		SceneManager::getInstange()->goal(beatChangeNum, combo, true);
-		return true;
-	}
-	return false;
+	SceneManager::getInstange()->goal(beatChangeNum, combo, true);
+	return true;
 }
 
 void BaseStage::timeOut() {
@@ -153,8 +150,8 @@ void BaseStage::updatePlayerPos() {
 
 			// 移動可能なら移動する
 			if (nextMapNum != MAP_NUM::UNDEF
-			   &&
-			  (nextMapNum == nowMovableRoad || nextMapNum == MAP_NUM::GOAL)) {
+				&&
+				(nextMapNum == nowMovableRoad || nextMapNum == MAP_NUM::GOAL)) {
 				// 移動したことを記録
 				playerMoved = true;
 				// 移動後のマップ座標を反映
@@ -163,8 +160,8 @@ void BaseStage::updatePlayerPos() {
 				playerEasing = true;
 				easeStartPos = playerObj->position;
 				easeEndPos = XMFLOAT3(playerMapPos.x * mapSide,
-											   playerObj->position.y,
-											   playerMapPos.y * -mapSide);
+									  playerObj->position.y,
+									  playerMapPos.y * -mapSide);
 				// イージング開始時間をリセット
 				easeTime->reset();
 
@@ -296,15 +293,6 @@ void BaseStage::updateTime() {
 
 	// この範囲内なら移動はできない
 	//movableFlag = !(movableRaitoMin < beatRaito&& beatRaito < movableRaitoMax);
-
-	debugText.Print(spriteCommon, "X         X", 0, debugText.fontHeight,
-					1.f, XMFLOAT4(1, 1, 1, 0.5f));
-
-	debugText.Print(spriteCommon,
-					"X",
-					beatRaito * 10.f * debugText.fontWidth, debugText.fontHeight,
-					1.f,
-					XMFLOAT4(1, 1, 1, 1));
 
 
 	constexpr float circleScaleMin = 0.3f;
@@ -444,7 +432,7 @@ void BaseStage::init() {
 	Sprite::commonLoadTexture(spriteCommon,
 							  0,
 							  L"Resources/circle.png",
-							   DirectXCommon::getInstance()->getDev());
+							  DirectXCommon::getInstance()->getDev());
 
 	circleSprite.reset(new Sprite());
 	circleSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
@@ -626,28 +614,13 @@ void BaseStage::update() {
 
 	constexpr XMFLOAT4 dbFontCol = XMFLOAT4(1, 1, 1, 1);
 
-	debugText.formatPrint(spriteCommon, 0, 0, 1.f,
-						  dbFontCol, "FPS : %f", dxCom->getFPS());
-
-	debugText.Print(spriteCommon, "EZ : move camera", 0, debugText.fontHeight * 3);
-
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 4, 1.f,
+	debugText.formatPrint(spriteCommon, 0, 0, 2.f,
 						  dbFontCol,
-						  "combo %u / %u", combo, clearCombo);
+						  "combo : %u", combo);
 
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 5, 1.f,
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 2, 2.f,
 						  dbFontCol,
-						  "count %u / %u", beatChangeNum, clearCount);
-
-
-
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 7, 1.f,
-						  dbFontCol,
-						  "Time : %.6f[s]", (long double)timer->getNowTime() / Time::oneSec);
-
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 8, 1.f,
-						  dbFontCol,
-						  "count Remaining : %u / %u", clearCount - beatChangeNum, clearCount);
+						  "count : %u / %u", clearCount - beatChangeNum, clearCount);
 
 #pragma endregion 情報表示
 

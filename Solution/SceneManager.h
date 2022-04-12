@@ -24,8 +24,8 @@ private:
 	GameScene* nowScene = nullptr;
 	SCENE_NUM nextScene;
 
-	unsigned clearHalfBeat = 0u;	//クリア時間
-	unsigned clearCombo = 0u;	//コンボ
+	unsigned clearHalfBeat = 0u;	// クリア時間
+	unsigned clearCombo = 0u;	// クリア時のコンボ
 	bool achieving = true;
 
 public:
