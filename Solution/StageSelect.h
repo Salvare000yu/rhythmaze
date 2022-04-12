@@ -11,6 +11,8 @@
 
 #include "SceneManager.h"
 
+#include <vector>
+
 class StageSelect :
 	public GameScene {
 
@@ -18,16 +20,15 @@ class StageSelect :
 	// デバッグテキスト
 	// --------------------
 	Sprite::SpriteCommon spCom;
-	// スプライト共通テクスチャ読み込み
-	enum TEX_NUM { EX, P1, P2, P3, BACK };
 	SCENE_NUM SELECT = SCENE_NUM::EXPLANATION;
 
 	// --------------------
 	// スプライト個別
 	// --------------------
 	static const int SPRITES_NUM = 4;
-	Sprite sprites[SPRITES_NUM]{};
-	Sprite selectBack[SPRITES_NUM]{};
+	std::vector<Sprite> stage;
+	std::vector<Sprite> stageBack;
+	UINT nowSelect = 0;
 
 	DebugText debugText{};
 	// デバッグテキスト用のテクスチャ番号を指定
