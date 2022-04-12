@@ -623,7 +623,7 @@ void BaseStage::update() {
 	constexpr float dataStrScale = 2.f;
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * (dataStrScale + 1.f), dataStrScale,
 						  dbFontCol,
-						  "combo : %u\ncount : %u / %u",
+						  "%u combo\n%u / %u",
 						  combo,
 						  clearCount - beatChangeNum, clearCount);
 
