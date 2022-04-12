@@ -32,7 +32,9 @@ void PlayScene::pathInit() {
 
 // ’Ç‰Á‚Å‰Šú‰»‚ª•K—v‚È‚ç‚±‚ÌŠÖ”‚Ì’†‚É‘‚­
 void PlayScene::additionalInit() {
-	musicBpm = 125.f;
+	musicBpm = 125;
+
+	bgmBolume = 0.4f;
 
 	clearCombo = 1u;
 	clearCount = 250u;
