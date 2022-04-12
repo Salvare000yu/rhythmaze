@@ -618,13 +618,14 @@ void BaseStage::update() {
 
 	constexpr XMFLOAT4 dbFontCol = XMFLOAT4(1, 1, 1, 1);
 
-	debugText.formatPrint(spriteCommon, 0, 0, 2.f,
-						  dbFontCol,
-						  "combo : %u", combo);
+	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT", 0, 0);
 
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 2, 2.f,
+	constexpr float dataStrScale = 2.f;
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * (dataStrScale + 1.f), dataStrScale,
 						  dbFontCol,
-						  "count : %u / %u", clearCount - beatChangeNum, clearCount);
+						  "%u combo\n%u / %u",
+						  combo,
+						  clearCount - beatChangeNum, clearCount);
 
 #pragma endregion èÓïÒï\é¶
 
