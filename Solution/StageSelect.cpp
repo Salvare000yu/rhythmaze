@@ -228,8 +228,11 @@ void StageSelect::update() {
 
 	// todo STAGE4もほかのステージ同様に選べるようにする
 	if (input->triggerKey(DIK_4)) SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE4);
+	else if (input->triggerKey(DIK_5)) SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE5);
+	else if (input->triggerKey(DIK_6)) SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE6);
+	else if (input->triggerKey(DIK_7)) SceneManager::getInstange()->changeScene(SCENE_NUM::STAGE7);
 
-	debugText.Print(spCom, "STAGE SELECT\n\nARROW : MOVE\nENTER : SELECT\n\nR : BACK_TITLE\n\n4 : START STAGE4", 0, 0);
+	debugText.Print(spCom, "STAGE SELECT\n\nARROW : MOVE\nENTER : SELECT\n\nR : BACK_TITLE\n\n4 : START STAGE4\n5 : START STAGE5\n6 : START STAGE6\n7 : START STAGE7", 0, 0);
 }
 
 void StageSelect::draw() {

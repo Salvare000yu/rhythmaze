@@ -8,6 +8,9 @@
 #include "Stage2.h"
 #include "Stage3.h"
 #include "Stage4.h"
+#include "Stage5.h"
+#include "Stage6.h"
+#include "Stage7.h"
 
 #include "Input.h"
 
@@ -61,6 +64,16 @@ void SceneManager::update() {
 			break;
 		case SCENE_NUM::STAGE4:
 			nowScene = new Stage4();
+			break;
+		case SCENE_NUM::STAGE5:
+			nowScene = new Stage5();
+			break;
+		case SCENE_NUM::STAGE6:
+			nowScene = new Stage6();
+			break;
+		case SCENE_NUM::STAGE7:
+			nowScene = new Stage7();
+			break;
 		}
 
 		nextScene = SCENE_NUM::NONE;	//次シーンの情報をクリア

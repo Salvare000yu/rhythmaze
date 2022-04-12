@@ -8,7 +8,10 @@ enum class SCENE_NUM : unsigned short {
 	STAGE1,
 	STAGE2,
 	STAGE3,
-	STAGE4
+	STAGE4,
+	STAGE5,
+	STAGE6,
+	STAGE7
 };
 
 class SceneManager

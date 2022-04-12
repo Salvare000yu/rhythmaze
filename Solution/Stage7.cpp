@@ -1,4 +1,4 @@
-#include "Stage4.h"
+#include "Stage7.h"
 
 #include "SceneManager.h"
 
@@ -14,8 +14,8 @@
 
 using namespace DirectX;
 
-void Stage4::pathInit() {
-	mapCSVFilePath = "Resources/map/map_stage4.csv";
+void Stage7::pathInit() {
+	mapCSVFilePath = "Resources/map/map_Stage7.csv";
 
 	//boxModelPath = L"Resources/model/box/box.obj";
 	//boxModelTexPath = L"Resources/model/box/box.png";
@@ -31,7 +31,7 @@ void Stage4::pathInit() {
 }
 
 // í«â¡Ç≈èâä˙âªÇ™ïKóvÇ»ÇÁÇ±ÇÃä÷êîÇÃíÜÇ…èëÇ≠
-void Stage4::additionalInit() {
+void Stage7::additionalInit() {
 	musicBpm = 125.f;
 
 	bgmBolume = 0.4f;
@@ -42,7 +42,7 @@ void Stage4::additionalInit() {
 	spriteInit();
 }
 
-void Stage4::spriteInit() {
+void Stage7::spriteInit() {
 	for (size_t i = 0u; i < SPRITES_NUM; i++) {
 		sprites[i].create(dxCom->getDev(),
 						  WinAPI::window_width, WinAPI::window_height,
@@ -53,7 +53,7 @@ void Stage4::spriteInit() {
 	}
 }
 
-void Stage4::additionalDrawSprite() {
+void Stage7::additionalDrawSprite() {
 	/*for (auto& i: sprites) {
 		i.drawWithUpdate(dxCom, spriteCommon);
 	}*/
