@@ -32,6 +32,8 @@ void PlayScene::pathInit() {
 
 // ’Ç‰Á‚Å‰Šú‰»‚ª•K—v‚È‚ç‚±‚ÌŠÖ”‚Ì’†‚É‘‚­
 void PlayScene::additionalInit() {
+	stageNum = 1u;
+
 	musicBpm = 125;
 
 	bgmBolume = 0.4f;
