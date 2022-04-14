@@ -16,6 +16,7 @@ namespace {
 	constexpr auto roadWallCol = wallCol;
 }
 
+// @return 今の位置
 DirectX::XMFLOAT3 BaseStage::easePos(const DirectX::XMFLOAT3 startPos,
 									 const DirectX::XMFLOAT3 endPos,
 									 const float timeRaito,
@@ -44,9 +45,9 @@ void BaseStage::updateLightPosition() {
 
 	playerObj->setLightPos(light);
 
-	for (UINT y = 0; y < mapData.size(); y++) {
-		for (UINT x = 0; x < mapData[y].size(); x++) {
-			mapObj[y][x].setLightPos(light);
+	for (auto& y : mapObj) {
+		for (auto& x : y) {
+			x.setLightPos(light);
 		}
 	}
 }
@@ -220,7 +221,7 @@ void BaseStage::updateTime() {
 	constexpr float aheadJudgeRange = 0.25f;	// この値分次の拍の始まりが速くなる[0~1]
 
 	// 拍が変わったら
-	if (nowTime >= oneBeatTime * (beatChangeNum + 1) - oneBeatTime * aheadJudgeRange) {
+	if (nowTime >= oneBeatTime * ((float)beatChangeNum + 1u) - oneBeatTime * aheadJudgeRange) {
 		beatChangeNum++;
 		beatChangeTime = nowTime;	// 今の時間を記録
 		frontBeatFlag = !frontBeatFlag;	// 表迫と裏拍をchange
@@ -242,8 +243,8 @@ void BaseStage::updateTime() {
 		constexpr auto defColor = XMFLOAT4(1, 1, 1, 1);
 		constexpr auto frontColor = XMFLOAT4(0, 1, 0, 1);
 		constexpr auto backColor = XMFLOAT4(1, 0.5f, 1, 1);
-		for (UINT y = 0; y < mapData.size(); y++) {
-			for (UINT x = 0; x < mapData[y].size(); x++) {
+		for (UINT y = 0, yLen = mapData.size(); y < yLen; y++) {
+			for (UINT x = 0, xLen = mapData[y].size(); x < xLen; x++) {
 				switch (mapData[y][x]) {
 				case MAP_NUM::FRONT_ROAD:
 					if (frontBeatFlag) {
@@ -380,10 +381,10 @@ std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string& csvF
 void BaseStage::loadMapFile(const std::string& csvFilePath) {
 	const auto mapFileData = loadCsv(csvFilePath);
 
-	for (UINT y = 0; y < mapFileData.size(); y++) {
+	for (UINT y = 0, yLen = mapFileData.size(); y < yLen; y++) {
 		mapData.emplace_back();
 
-		for (UINT x = 0; x < mapFileData[y].size(); x++) {
+		for (UINT x = 0, xLen = mapFileData[y].size(); x < xLen; x++) {
 			mapData[y].emplace_back();
 
 			std::string chip = mapFileData[y][x];
@@ -439,8 +440,8 @@ void BaseStage::init() {
 	circleSprite.reset(new Sprite());
 	circleSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
 						 0, spriteCommon);
-	circleSprite->position.x = WinAPI::window_width / 2;
-	circleSprite->position.y = WinAPI::window_height / 2;
+	circleSprite->position.x = WinAPI::window_width / 2.f;
+	circleSprite->position.y = WinAPI::window_height / 2.f;
 
 
 	debugText.Initialize(dxCom->getDev(),
@@ -482,6 +483,15 @@ void BaseStage::init() {
 	model->loadTexture(dxCom->getDev(), boxModelTexPath_back.c_str(), BOX_TEXNUM::BACK);
 	model->loadTexture(dxCom->getDev(), boxModelTexPath_goal.c_str(), BOX_TEXNUM::GOAL);
 
+	// ゴールのモデルの宣言
+	constexpr UINT goalTexNum = 0;
+	goalModel.reset(new Model(dxCom->getDev(),
+							  goalModelPath.c_str(), goalModelTexPath.c_str(),
+							  WinAPI::window_width, WinAPI::window_height,
+							  Object3d::constantBufferNum, goalTexNum));
+	XMFLOAT3 goalObjScale = XMFLOAT3(4, 4, 4);
+	XMFLOAT3 goalObjRotation = XMFLOAT3(0, 90, 90);
+
 #pragma endregion マップ
 
 #pragma region 迷路
@@ -493,9 +503,9 @@ void BaseStage::init() {
 	constexpr float mapPosY = -150.f;
 	floorPosY = mapPosY;
 
-	for (UINT y = 0; y < mapData.size(); ++y) {
+	for (UINT y = 0, loopLenY = mapData.size(); y < loopLenY; ++y) {
 		mapObj.emplace_back();
-		for (UINT x = 0; x < mapData[y].size(); ++x) {
+		for (UINT x = 0, loopLenX = mapData[y].size(); x < loopLenX; ++x) {
 			mapObj[y].emplace_back(Object3d(DirectXCommon::getInstance()->getDev(), model.get(), BOX_TEXNUM::WALL));
 			mapObj[y][x].scale = XMFLOAT3(obj3dScale, obj3dScale, obj3dScale);
 			mapObj[y][x].position = XMFLOAT3(x * mapSide,
@@ -506,7 +516,15 @@ void BaseStage::init() {
 			case MAP_NUM::WALL:
 				mapObj[y][x].position.y += obj3dScale;
 				mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-				mapObj[y][x].color = noRoadWallCol;
+
+				if (y == 0 || x == 0) {
+					/*再外周の左と上*/
+				} else if (x == loopLenX - 1 || y == loopLenY - 1) {
+					/*再外周の右と下*/
+				} else {
+					/*その他の壁*/
+					mapObj[y][x].color = noRoadWallCol;
+				}
 				break;
 			case MAP_NUM::FRONT_ROAD:
 				mapObj[y][x].texNum = BOX_TEXNUM::FRONT;
@@ -517,9 +535,20 @@ void BaseStage::init() {
 			case MAP_NUM::GOAL:
 				mapObj[y][x].texNum = BOX_TEXNUM::GOAL;
 				mapObj[y][x].color = XMFLOAT4(1, 1, 1, 1);
+				// todo 此処でゴールのオブジェクトの座標を設定する
+				goalObj.emplace_back(Object3d(dxCom->getDev(), goalModel.get(), goalTexNum));
+				{
+					auto& lastGoal = goalObj.back();
+					lastGoal.position = mapObj[y][x].position;
+					lastGoal.position.y += obj3dScale;
+					lastGoal.scale = goalObjScale;
+
+					lastGoal.rotation = goalObjRotation;
+				}
 				break;
 			default:
 				mapObj[y][x].color = XMFLOAT4(0, 0, 1, 1);
+				break;
 			}
 		}
 	}
@@ -618,13 +647,20 @@ void BaseStage::update() {
 
 	constexpr XMFLOAT4 dbFontCol = XMFLOAT4(1, 1, 1, 1);
 
-	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT", 0, 0);
+	debugText.formatPrint(spriteCommon, 0, 0, 1, dbFontCol, "Stage %u", stageNum);
+	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT", 0, debugText.fontHeight);
 
-	constexpr float dataStrScale = 2.f;
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * (dataStrScale + 1.f), dataStrScale,
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 2, 1,
 						  dbFontCol,
-						  "%u combo\n%u / %u",
-						  combo,
+						  "%u combo",
+						  combo);
+
+	const auto timeLimit = clearCount - beatChangeNum;
+	const float raito = (float)timeLimit / clearCount;
+
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1,
+						  XMFLOAT4(1, raito, raito, 1),
+						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
 
 #pragma endregion 情報表示
@@ -648,12 +684,17 @@ void BaseStage::draw() {
 void BaseStage::drawObj3d() {
 	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), object3dPipelineSet);
 
-	for (UINT y = 0; y < mapData.size(); ++y) {
-		for (UINT x = 0; x < mapData[y].size(); ++x) {
-			mapObj[y][x].drawWithUpdate(camera->getViewMatrix(), dxCom);
+	for (auto& y : mapObj) {
+		for (auto& x : y) {
+			x.drawWithUpdate(camera->getViewMatrix(), dxCom);
 		}
 	}
+
 	playerObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
+
+	for (auto& i : goalObj) {
+		i.drawWithUpdate(camera->getViewMatrix(), dxCom);
+	}
 
 	additionalDrawObj3d();
 

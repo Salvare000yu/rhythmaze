@@ -89,6 +89,8 @@ protected:
 
 	DirectX::XMFLOAT2 playerMapPos;
 
+	std::unique_ptr<Model> goalModel;
+	std::vector<Object3d> goalObj;
 
 
 	std::unique_ptr<Model> backModel;
@@ -194,8 +196,12 @@ protected:
 	std::wstring backModelPath = L"Resources/model/back/back.obj";
 	std::wstring backModelTexPath = L"Resources/model/back/back_tex.png";
 
+	std::wstring goalModelPath = L"Resources/model/goal/goal.obj";
+	std::wstring goalModelTexPath = L"Resources/model/player/nanohanairo.png";
+
 #pragma endregion ファイルパス
 
+	UINT stageNum = 0;
 	float musicBpm = 125.f;
 
 protected:

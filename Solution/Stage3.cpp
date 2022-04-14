@@ -32,6 +32,8 @@ void Stage3::pathInit() {
 
 // ’Ç‰Á‚Å‰Šú‰»‚ª•K—v‚È‚ç‚±‚ÌŠÖ”‚Ì’†‚É‘‚­
 void Stage3::additionalInit() {
+	stageNum = 3u;
+
 	musicBpm = 125;
 
 	bgmBolume = 0.4f;
