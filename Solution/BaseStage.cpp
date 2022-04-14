@@ -193,6 +193,9 @@ void BaseStage::updatePlayerPos() {
 		if (missFlag) {
 			combo = 0U;	// コンボをリセット
 			missFlag = false;
+
+			red->isInvisible = false;
+			redTimer->reset();
 		}
 
 		if (goalFlag) goal();
@@ -210,6 +213,18 @@ void BaseStage::updatePlayerPos() {
 
 		//指定した時間が過ぎたらイージング終了
 		if (easeTimeRaito >= 1.f) playerEasing = false;
+	}
+
+	if (!red->isInvisible) {
+		auto nowTime = redTimer->getNowTime();
+
+		auto raito = (float)nowTime / (float)redTime;
+		if (raito >= 1.f) {
+			red->isInvisible = true;	// 定めた時間が経過したら終了
+		} else {
+			red->color.w = (1.f - raito) * 0.5f;	// 0 ~ 0.5の範囲で変化
+			red->SpriteTransferVertexBuffer(spriteCommon);
+		}
 	}
 }
 
@@ -432,16 +447,54 @@ void BaseStage::init() {
 							  L"Resources/debugfont.png",
 							  DirectXCommon::getInstance()->getDev());
 
+	constexpr UINT circleTexNum = 0;
 	Sprite::commonLoadTexture(spriteCommon,
-							  0,
+							  circleTexNum,
 							  L"Resources/circle.png",
 							  DirectXCommon::getInstance()->getDev());
 
 	circleSprite.reset(new Sprite());
 	circleSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
-						 0, spriteCommon);
+						 circleTexNum, spriteCommon);
 	circleSprite->position.x = WinAPI::window_width / 2.f;
 	circleSprite->position.y = WinAPI::window_height / 2.f;
+
+	constexpr UINT barTexNum = circleTexNum + 1;
+	Sprite::commonLoadTexture(spriteCommon,
+							  barTexNum,
+							  L"Resources/circle.png",
+							  DirectXCommon::getInstance()->getDev());
+
+	timeBarSprite.reset(new Sprite());
+	timeBarSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
+						  barTexNum, spriteCommon,
+						  { 0.5f, 0.f });
+
+	timeBarSprite->size.y = WinAPI::window_height / 20.f;
+	timeBarSprite->size.x = timeBarWid;
+
+	timeBarSprite->position.x = WinAPI::window_width / 2.f;
+	timeBarSprite->position.y = timeBarSprite->size.y / 2.f;
+
+
+	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
+
+
+	constexpr UINT redTexNum = 1u;
+	Sprite::commonLoadTexture(spriteCommon,
+							  redTexNum,
+							  L"Resources/red.png",
+							  DirectXCommon::getInstance()->getDev());
+
+	red.reset(new Sprite());
+	red->create(DirectXCommon::getInstance()->getDev(),
+				WinAPI::window_width, WinAPI::window_height,
+				redTexNum,
+				spriteCommon,
+				{ 0, 0 });
+	red->size = XMFLOAT2(WinAPI::window_width, WinAPI::window_height);
+	red->color.w = 0.5f;
+	red->isInvisible = true;
 
 
 	debugText.Initialize(dxCom->getDev(),
@@ -449,6 +502,14 @@ void BaseStage::init() {
 						 debugTextTexNumber,
 						 spriteCommon);
 #pragma endregion スプライト
+
+#pragma region red
+	// 一分/BPM即ち一拍の時間(表裏拍のセット一つ分)
+	redTime = 60 * Time::oneSec / musicBpm;
+
+	redTimer.reset(new Time());
+#pragma endregion red
+
 
 #pragma region マップファイル
 
@@ -663,6 +724,19 @@ void BaseStage::update() {
 						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
 
+	const float timeRaito = (clearCount - beatChangeNum) / (float)clearCount;
+
+	timeBarSprite->size.x = timeBarWid * timeRaito;
+
+	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
+
+	debugText.Print(spriteCommon, "TIME",
+					timeBarSprite->position.x - debugText.fontWidth * 2.f,
+					timeBarSprite->position.y,
+					1.f,
+					XMFLOAT4(1, 1, 0, 1));
+
+
 #pragma endregion 情報表示
 
 	// 制限時間
@@ -713,6 +787,8 @@ void BaseStage::drawParticle() {
 void BaseStage::drawSprite() {
 	Sprite::drawStart(spriteCommon, dxCom->getCmdList());
 	circleSprite->drawWithUpdate(dxCom, spriteCommon);
+	red->drawWithUpdate(dxCom, spriteCommon);
+	timeBarSprite->drawWithUpdate(dxCom, spriteCommon);
 	// スプライト描画
 	additionalDrawSprite();
 

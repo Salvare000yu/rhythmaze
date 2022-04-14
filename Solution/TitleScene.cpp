@@ -23,7 +23,7 @@ void TitleScene::init() {
 
 	debugText.Initialize(DirectXCommon::getInstance()->getDev(),
 						 WinAPI::window_width, WinAPI::window_height,
-						debugTextTexNumber, spCom);
+						 debugTextTexNumber, spCom);
 
 
 	// ‰¹
@@ -38,7 +38,9 @@ void TitleScene::update() {
 	if (input->triggerKey(DIK_SPACE)) {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
 	}
-	debugText.Print(spCom, "SPACE : stage select", debugText.fontWidth * 1.5f, WinAPI::window_height - debugText.fontHeight * 1.5f);
+	debugText.Print(spCom, "Press SPACE...",
+					WinAPI::window_width * 0.5f - debugText.fontWidth * 7,
+					WinAPI::window_height * 0.75);
 }
 
 void TitleScene::draw() {
