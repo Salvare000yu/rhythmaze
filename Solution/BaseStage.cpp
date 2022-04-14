@@ -447,16 +447,38 @@ void BaseStage::init() {
 							  L"Resources/debugfont.png",
 							  DirectXCommon::getInstance()->getDev());
 
+	constexpr UINT circleTexNum = 0;
 	Sprite::commonLoadTexture(spriteCommon,
-							  0,
+							  circleTexNum,
 							  L"Resources/circle.png",
 							  DirectXCommon::getInstance()->getDev());
 
 	circleSprite.reset(new Sprite());
 	circleSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
-						 0, spriteCommon);
+						 circleTexNum, spriteCommon);
 	circleSprite->position.x = WinAPI::window_width / 2.f;
 	circleSprite->position.y = WinAPI::window_height / 2.f;
+
+	constexpr UINT barTexNum = circleTexNum + 1;
+	Sprite::commonLoadTexture(spriteCommon,
+							  barTexNum,
+							  L"Resources/circle.png",
+							  DirectXCommon::getInstance()->getDev());
+
+	timeBarSprite.reset(new Sprite());
+	timeBarSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
+						  barTexNum, spriteCommon,
+						  { 0.5f, 0.f });
+
+	timeBarSprite->size.y = WinAPI::window_height / 20.f;
+	timeBarSprite->size.x = timeBarWid;
+
+	timeBarSprite->position.x = WinAPI::window_width / 2.f;
+	timeBarSprite->position.y = timeBarSprite->size.y / 2.f;
+
+
+	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
+
 
 	constexpr UINT redTexNum = 1u;
 	Sprite::commonLoadTexture(spriteCommon,
@@ -702,6 +724,19 @@ void BaseStage::update() {
 						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
 
+	const float timeRaito = (clearCount - beatChangeNum) / (float)clearCount;
+
+	timeBarSprite->size.x = timeBarWid * timeRaito;
+
+	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
+
+	debugText.Print(spriteCommon, "TIME",
+					timeBarSprite->position.x - debugText.fontWidth * 2.f,
+					timeBarSprite->position.y,
+					1.f,
+					XMFLOAT4(1, 1, 0, 1));
+
+
 #pragma endregion 情報表示
 
 	// 制限時間
@@ -753,6 +788,7 @@ void BaseStage::drawSprite() {
 	Sprite::drawStart(spriteCommon, dxCom->getCmdList());
 	circleSprite->drawWithUpdate(dxCom, spriteCommon);
 	red->drawWithUpdate(dxCom, spriteCommon);
+	timeBarSprite->drawWithUpdate(dxCom, spriteCommon);
 	// スプライト描画
 	additionalDrawSprite();
 

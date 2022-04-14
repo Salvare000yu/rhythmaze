@@ -58,6 +58,8 @@ protected:
 	SpriteCommon spriteCommon;
 
 	std::unique_ptr <Sprite> circleSprite;
+	std::unique_ptr <Sprite> timeBarSprite;
+	static const UINT timeBarWid = WinAPI::window_width * 0.75f;
 
 	std::unique_ptr<Sprite> red;
 #pragma endregion スプライト

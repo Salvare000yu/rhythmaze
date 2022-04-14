@@ -195,9 +195,21 @@ void StageSelect::update() {
 	if (nowSelect < stageNum) debugText.Print(spCom, "->", WinAPI::window_width / 2 + debugText.fontWidth * 0.5, WinAPI::window_height / 3);
 
 	debugText.Print(spCom,
-					"SPACE : SELECT\n\n HOME : MOVE_Setsumei\n  END : MOVE_LAST_STAGE",
+					"SPACE : SELECT",
 					WinAPI::window_width / 2 - debugText.fontWidth * 6,
 					WinAPI::window_height / 3.f * 2 - debugText.fontHeight);
+	if (nowSelect > 0) {
+		debugText.Print(spCom,
+						"HOME : MOVE_Setsumei",
+						WinAPI::window_width / 2 - debugText.fontWidth * 5,
+						WinAPI::window_height / 3.f * 2);
+	}
+	if (nowSelect < stageNum) {
+		debugText.Print(spCom,
+						"END : MOVE_LAST_STAGE",
+						WinAPI::window_width / 2 - debugText.fontWidth * 4,
+						WinAPI::window_height / 3.f * 2 + debugText.fontHeight);
+	}
 }
 
 void StageSelect::draw() {
