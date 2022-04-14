@@ -516,7 +516,15 @@ void BaseStage::init() {
 			case MAP_NUM::WALL:
 				mapObj[y][x].position.y += obj3dScale;
 				mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-				mapObj[y][x].color = noRoadWallCol;
+
+				if (y == 0 || x == 0) {
+					/*çƒäOé¸ÇÃç∂Ç∆è„*/
+				} else if (x == loopLenX - 1 || y == loopLenY - 1) {
+					/*çƒäOé¸ÇÃâEÇ∆â∫*/
+				} else {
+					/*ÇªÇÃëºÇÃï«*/
+					mapObj[y][x].color = noRoadWallCol;
+				}
 				break;
 			case MAP_NUM::FRONT_ROAD:
 				mapObj[y][x].texNum = BOX_TEXNUM::FRONT;

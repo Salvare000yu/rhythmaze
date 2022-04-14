@@ -11,7 +11,7 @@ void TitleScene::init() {
 									   WinAPI::window_width, WinAPI::window_height);
 
 	constexpr UINT titleSpriteNum = 0;
-	Sprite::commonLoadTexture(spCom, 0, L"Resources/Title/title.png", DirectXCommon::getInstance()->getDev());
+	Sprite::commonLoadTexture(spCom, 0, L"Resources/backSprite/title.png", DirectXCommon::getInstance()->getDev());
 
 	titleSprite.reset(new Sprite());
 	titleSprite->create(DirectXCommon::getInstance()->getDev(),
