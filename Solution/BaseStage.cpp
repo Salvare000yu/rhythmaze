@@ -193,6 +193,9 @@ void BaseStage::updatePlayerPos() {
 		if (missFlag) {
 			combo = 0U;	// コンボをリセット
 			missFlag = false;
+
+			red->isInvisible = false;
+			redTimer->reset();
 		}
 
 		if (goalFlag) goal();
@@ -210,6 +213,18 @@ void BaseStage::updatePlayerPos() {
 
 		//指定した時間が過ぎたらイージング終了
 		if (easeTimeRaito >= 1.f) playerEasing = false;
+	}
+
+	if (!red->isInvisible) {
+		auto nowTime = redTimer->getNowTime();
+
+		auto raito = (float)nowTime / (float)redTime;
+		if (raito >= 1.f) {
+			red->isInvisible = true;	// 定めた時間が経過したら終了
+		} else {
+			red->color.w = (1.f - raito) * 0.5f;	// 0 ~ 0.5の範囲で変化
+			red->SpriteTransferVertexBuffer(spriteCommon);
+		}
 	}
 }
 
@@ -443,12 +458,36 @@ void BaseStage::init() {
 	circleSprite->position.x = WinAPI::window_width / 2.f;
 	circleSprite->position.y = WinAPI::window_height / 2.f;
 
+	constexpr UINT redTexNum = 1u;
+	Sprite::commonLoadTexture(spriteCommon,
+							  redTexNum,
+							  L"Resources/red.png",
+							  DirectXCommon::getInstance()->getDev());
+
+	red.reset(new Sprite());
+	red->create(DirectXCommon::getInstance()->getDev(),
+				WinAPI::window_width, WinAPI::window_height,
+				redTexNum,
+				spriteCommon,
+				{ 0, 0 });
+	red->size = XMFLOAT2(WinAPI::window_width, WinAPI::window_height);
+	red->color.w = 0.5f;
+	red->isInvisible = true;
+
 
 	debugText.Initialize(dxCom->getDev(),
 						 WinAPI::window_width, WinAPI::window_height,
 						 debugTextTexNumber,
 						 spriteCommon);
 #pragma endregion スプライト
+
+#pragma region red
+	// 一分/BPM即ち一拍の時間(表裏拍のセット一つ分)
+	redTime = 60 * Time::oneSec / musicBpm;
+
+	redTimer.reset(new Time());
+#pragma endregion red
+
 
 #pragma region マップファイル
 
@@ -713,6 +752,7 @@ void BaseStage::drawParticle() {
 void BaseStage::drawSprite() {
 	Sprite::drawStart(spriteCommon, dxCom->getCmdList());
 	circleSprite->drawWithUpdate(dxCom, spriteCommon);
+	red->drawWithUpdate(dxCom, spriteCommon);
 	// スプライト描画
 	additionalDrawSprite();
 

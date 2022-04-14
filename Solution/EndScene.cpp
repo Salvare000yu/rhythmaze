@@ -60,9 +60,9 @@ void EndScene::update() {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
 	}
 
-	debugText.Print(spCom, "SPACE : back Stage select", 0, WinAPI::window_height / 2);
+	debugText.Print(spCom, "SPACE : back Stage select", 0, WinAPI::window_height / 2.f);
 
-	debugText.formatPrint(spCom, 0, WinAPI::window_height / 2 + debugText.fontHeight * 2, 1.f,
+	debugText.formatPrint(spCom, 0, WinAPI::window_height / 2.f + debugText.fontHeight * 2, 1.f,
 						  DirectX::XMFLOAT4(1, 1, 1, 1), clearinfiStr);
 }
 

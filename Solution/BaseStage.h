@@ -58,6 +58,8 @@ protected:
 	SpriteCommon spriteCommon;
 
 	std::unique_ptr <Sprite> circleSprite;
+
+	std::unique_ptr<Sprite> red;
 #pragma endregion スプライト
 
 #pragma region デバッグテキスト
@@ -120,6 +122,8 @@ protected:
 #pragma region 時間
 
 	std::unique_ptr<Time> timer;
+
+	std::unique_ptr<Time> redTimer;
 
 #pragma endregion 時間
 
@@ -203,6 +207,8 @@ protected:
 
 	UINT stageNum = 0;
 	float musicBpm = 125.f;
+
+	UINT redTime = 0;
 
 protected:
 	void updateLightPosition();
