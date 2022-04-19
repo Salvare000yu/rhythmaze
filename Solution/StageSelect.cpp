@@ -103,28 +103,30 @@ void StageSelect::update() {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
 	}
 
-	constexpr auto up = DIK_UP;
-	constexpr auto down = DIK_DOWN;
 	constexpr auto right = DIK_RIGHT;
 	constexpr auto left = DIK_LEFT;
 
-	if (input->triggerKey(down) || input->triggerKey(up)
-		|| input->triggerKey(right) || input->triggerKey(left)
-		|| input->triggerKey(DIK_HOME) || input->triggerKey(DIK_END)) {
+	const auto inputR = input->triggerKey(right);
+	const auto inputL = input->triggerKey(left);
+	const auto inputLShift = input->hitKey(DIK_LSHIFT);
+
+	if (inputR || inputL || inputLShift) {
 
 		bool changeFlag = false;
 
-		if (nowSelect > 0 && input->triggerKey(left)) {
+		if (inputLShift) {
+			if (inputL) {
+				nowSelect = 0;
+				changeFlag = true;
+			} else if (inputR) {
+				nowSelect = stageNum;
+				changeFlag = true;
+			}
+		} else if (nowSelect > 0 && inputL) {
 			nowSelect--;
 			changeFlag = true;
-		} else if (nowSelect < stage.size() - 1 && input->triggerKey(right)) {
+		} else if (nowSelect < stage.size() - 1 && inputR) {
 			nowSelect++;
-			changeFlag = true;
-		} else if (input->triggerKey(DIK_HOME)) {
-			nowSelect = 0;
-			changeFlag = true;
-		} else if (input->triggerKey(DIK_END)) {
-			nowSelect = stageNum;
 			changeFlag = true;
 		}
 
@@ -200,14 +202,14 @@ void StageSelect::update() {
 					WinAPI::window_height / 3.f * 2 - debugText.fontHeight);
 	if (nowSelect > 0) {
 		debugText.Print(spCom,
-						"HOME : MOVE_Setsumei",
-						WinAPI::window_width / 2 - debugText.fontWidth * 5,
+						"LSHIFT + <- : MOVE_Setsumei",
+						WinAPI::window_width / 2 - debugText.fontWidth * 12,
 						WinAPI::window_height / 3.f * 2);
 	}
 	if (nowSelect < stageNum) {
 		debugText.Print(spCom,
-						"END : MOVE_LAST_STAGE",
-						WinAPI::window_width / 2 - debugText.fontWidth * 4,
+						"LSHIFT + -> : MOVE_LAST_STAGE",
+						WinAPI::window_width / 2 - debugText.fontWidth * 12,
 						WinAPI::window_height / 3.f * 2 + debugText.fontHeight);
 	}
 }
