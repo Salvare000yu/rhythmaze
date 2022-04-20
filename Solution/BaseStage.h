@@ -104,7 +104,7 @@ protected:
 
 #pragma region ˆÚ“®ŠÖ˜Aî•ñ
 
-	uint16_t beatChangeNum = 0;
+	unsigned beatChangeNum = 0;
 
 	Time::timeType beatChangeTime = 0;
 
@@ -232,6 +232,10 @@ protected:
 							  const DirectX::XMFLOAT3 endPos,
 							  const float timeRaito,
 							  const int easeTime);
+
+	void updateMovableRoad();
+
+	void changeBeatProc(const Time::timeType& nowTime);
 
 	void drawObj3d();
 	void drawParticle();

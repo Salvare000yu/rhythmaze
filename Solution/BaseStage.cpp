@@ -38,6 +38,72 @@ DirectX::XMFLOAT3 BaseStage::easePos(const DirectX::XMFLOAT3 startPos,
 	);
 }
 
+void BaseStage::updateMovableRoad() {
+	// --------------------
+	// 進めない道を壁にする
+	// --------------------
+	constexpr auto defColor = XMFLOAT4(1, 1, 1, 1);
+	constexpr auto frontColor = XMFLOAT4(0, 1, 0, 1);
+	constexpr auto backColor = XMFLOAT4(1, 0.5f, 1, 1);
+	for (UINT y = 0, yLen = mapData.size(); y < yLen; y++) {
+		for (UINT x = 0, xLen = mapData[y].size(); x < xLen; x++) {
+			switch (mapData[y][x]) {
+			case MAP_NUM::FRONT_ROAD:
+				if (frontBeatFlag) {
+					mapObj[y][x].position.y = floorPosY;
+					mapObj[y][x].texNum = BOX_TEXNUM::FRONT;
+					mapObj[y][x].color = defColor;
+				} else {
+					mapObj[y][x].position.y = floorPosY + obj3dScale;
+					mapObj[y][x].texNum = BOX_TEXNUM::WALL;
+					mapObj[y][x].color = roadWallCol;
+				}
+				break;
+			case MAP_NUM::BACK_ROAD:
+				if (frontBeatFlag) {
+					mapObj[y][x].position.y = floorPosY + obj3dScale;
+					mapObj[y][x].texNum = BOX_TEXNUM::WALL;
+					mapObj[y][x].color = roadWallCol;
+				} else {
+					mapObj[y][x].position.y = floorPosY;
+					mapObj[y][x].texNum = BOX_TEXNUM::BACK;
+					mapObj[y][x].color = defColor;
+				}
+				break;
+			}
+		}
+	}
+
+	// --------------------
+	// 今プレイヤーがいるところは壁にしない
+	// --------------------
+	mapObj[playerMapPos.y][playerMapPos.x].position.y = floorPosY;
+
+	mapObj[playerMapPos.y][playerMapPos.x].color = defColor;
+
+	if (mapData[playerMapPos.y][playerMapPos.x] == MAP_NUM::FRONT_ROAD) mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::FRONT;
+	else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;
+}
+
+void BaseStage::changeBeatProc(const Time::timeType& nowTime) {
+	beatChangeNum++;
+	beatChangeTime = nowTime;	// 今の時間を記録
+	frontBeatFlag = !frontBeatFlag;	// 表迫と裏拍をchange
+
+	if (playerMoved) {
+		playerMoved = false;
+	} //else combo = 0U;	// 止まっていたらコンボをリセット
+
+	if (frontBeatFlag) {
+		playerObj->scale = XMFLOAT3(playerScale, playerScale, playerScale);
+	} else {
+		const float backScale = playerScale * 0.8f;
+		playerObj->scale = XMFLOAT3(backScale, backScale, backScale);
+	}
+
+	updateMovableRoad();
+}
+
 void BaseStage::updateLightPosition() {
 	// プレイヤーの位置にライトを置く
 	light = playerObj->position;
@@ -230,80 +296,14 @@ void BaseStage::updatePlayerPos() {
 
 void BaseStage::updateTime() {
 	const auto nowTime = timer->getNowTime();	// 今の時間
-	float speed = musicBpm * 2/*/2*/;	// beat / min 毎分何拍か(表裏)
+	const float speed = musicBpm * 2/*/2*/;		// beat / min 毎分何拍か(表裏)
 	const auto oneBeatTime = timer->getOneBeatTime(speed);	// 一拍の時間を記録
 
 	constexpr float aheadJudgeRange = 0.25f;	// この値分次の拍の始まりが速くなる[0~1]
 
 	// 拍が変わったら
 	if (nowTime >= oneBeatTime * ((float)beatChangeNum + 1u) - oneBeatTime * aheadJudgeRange) {
-		beatChangeNum++;
-		beatChangeTime = nowTime;	// 今の時間を記録
-		frontBeatFlag = !frontBeatFlag;	// 表迫と裏拍をchange
-
-		if (playerMoved) {
-			playerMoved = false;
-		} //else combo = 0U;	// 止まっていたらコンボをリセット
-
-		if (frontBeatFlag) {
-			playerObj->scale = XMFLOAT3(playerScale, playerScale, playerScale);
-		} else {
-			const float backScale = playerScale * 0.8f;
-			playerObj->scale = XMFLOAT3(backScale, backScale, backScale);
-		}
-
-		// --------------------
-		// 進めない道を壁にする
-		// --------------------
-		constexpr auto defColor = XMFLOAT4(1, 1, 1, 1);
-		constexpr auto frontColor = XMFLOAT4(0, 1, 0, 1);
-		constexpr auto backColor = XMFLOAT4(1, 0.5f, 1, 1);
-		for (UINT y = 0, yLen = mapData.size(); y < yLen; y++) {
-			for (UINT x = 0, xLen = mapData[y].size(); x < xLen; x++) {
-				switch (mapData[y][x]) {
-				case MAP_NUM::FRONT_ROAD:
-					if (frontBeatFlag) {
-						mapObj[y][x].position.y = floorPosY;
-						mapObj[y][x].texNum = BOX_TEXNUM::FRONT;
-						mapObj[y][x].color = defColor;
-					} else {
-						mapObj[y][x].position.y = floorPosY + obj3dScale;
-						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-						mapObj[y][x].color = roadWallCol;
-					}
-					break;
-				case MAP_NUM::BACK_ROAD:
-					if (frontBeatFlag) {
-						mapObj[y][x].position.y = floorPosY + obj3dScale;
-						mapObj[y][x].texNum = BOX_TEXNUM::WALL;
-						mapObj[y][x].color = roadWallCol;
-					} else {
-						mapObj[y][x].position.y = floorPosY;
-						mapObj[y][x].texNum = BOX_TEXNUM::BACK;
-						mapObj[y][x].color = defColor;
-					}
-					break;
-				}
-			}
-		}
-		if (frontBeatFlag) {
-			playerObj->color = defColor;
-			circleSprite->color = frontColor;
-		} else {
-			playerObj->color = XMFLOAT4(0.5, 0.5, 0.5, 1);
-			circleSprite->color = backColor;
-		}
-
-
-		// --------------------
-		// 今プレイヤーがいるところは壁にしない
-		// --------------------
-		mapObj[playerMapPos.y][playerMapPos.x].position.y = floorPosY;
-
-		mapObj[playerMapPos.y][playerMapPos.x].color = defColor;
-
-		if (mapData[playerMapPos.y][playerMapPos.x] == MAP_NUM::FRONT_ROAD) mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::FRONT;
-		else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;
+		changeBeatProc(nowTime);
 	}
 
 	const float beatRaito = (nowTime - beatChangeTime) / (float)oneBeatTime;	// 今の拍の進行度[0~1]
@@ -312,7 +312,9 @@ void BaseStage::updateTime() {
 	// この範囲内なら移動はできない
 	//movableFlag = !(movableRaitoMin < beatRaito&& beatRaito < movableRaitoMax);
 
-
+	// --------------------
+	// タイミングを示す円の大きさ更新
+	// --------------------
 	constexpr float circleScaleMin = 0.3f;
 	float circleScale = beatRaito * (1.f - circleScaleMin) + circleScaleMin;
 	if (!frontBeatFlag) circleScale = 1.f - circleScale, circleScale = 0;
@@ -441,12 +443,20 @@ void BaseStage::init() {
 	spriteCommon = Sprite::createSpriteCommon(DirectXCommon::getInstance()->getDev(),
 											  WinAPI::window_width, WinAPI::window_height);
 
+#pragma region デバッグテキスト
 	// デバッグテキスト用のテクスチャ読み込み
 	Sprite::commonLoadTexture(spriteCommon,
 							  debugTextTexNumber,
 							  L"Resources/debugfont.png",
 							  DirectXCommon::getInstance()->getDev());
 
+	debugText.Initialize(dxCom->getDev(),
+						 WinAPI::window_width, WinAPI::window_height,
+						 debugTextTexNumber,
+						 spriteCommon);
+#pragma endregion デバッグテキスト
+
+#pragma region タイミング円
 	constexpr UINT circleTexNum = 0;
 	Sprite::commonLoadTexture(spriteCommon,
 							  circleTexNum,
@@ -459,27 +469,10 @@ void BaseStage::init() {
 	circleSprite->position.x = WinAPI::window_width / 2.f;
 	circleSprite->position.y = WinAPI::window_height / 2.f;
 
-	constexpr UINT barTexNum = circleTexNum + 1;
-	Sprite::commonLoadTexture(spriteCommon,
-							  barTexNum,
-							  L"Resources/circle.png",
-							  DirectXCommon::getInstance()->getDev());
+	circleSprite->color = XMFLOAT4(0.25f, 1.f, 0.25f, 1.f);
+#pragma endregion タイミング円
 
-	timeBarSprite.reset(new Sprite());
-	timeBarSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
-						  barTexNum, spriteCommon,
-						  { 0.5f, 0.f });
-
-	timeBarSprite->size.y = WinAPI::window_height / 20.f;
-	timeBarSprite->size.x = timeBarWid;
-
-	timeBarSprite->position.x = WinAPI::window_width / 2.f;
-	timeBarSprite->position.y = timeBarSprite->size.y / 2.f;
-
-
-	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
-
-
+#pragma region 失敗時の赤画面
 	constexpr UINT redTexNum = 1u;
 	Sprite::commonLoadTexture(spriteCommon,
 							  redTexNum,
@@ -497,27 +490,43 @@ void BaseStage::init() {
 	red->isInvisible = true;
 
 
-	debugText.Initialize(dxCom->getDev(),
-						 WinAPI::window_width, WinAPI::window_height,
-						 debugTextTexNumber,
-						 spriteCommon);
-#pragma endregion スプライト
-
-#pragma region red
 	// 一分/BPM即ち一拍の時間(表裏拍のセット一つ分)
 	redTime = 60 * Time::oneSec / musicBpm;
 
 	redTimer.reset(new Time());
-#pragma endregion red
+#pragma endregion 失敗時の赤画面
+
+#pragma region 時間表す棒
+	constexpr UINT barTexNum = circleTexNum + 1;
+	Sprite::commonLoadTexture(spriteCommon,
+							  barTexNum,
+							  L"Resources/red.png",
+							  DirectXCommon::getInstance()->getDev());
+
+	timeBarSprite.reset(new Sprite());
+	timeBarSprite->create(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height,
+						  barTexNum, spriteCommon,
+						  { 0.5f, 0.f });
+
+	timeBarSprite->size.y = WinAPI::window_height / 20.f;
+	timeBarSprite->size.x = timeBarWid;
+
+	timeBarSprite->position.x = WinAPI::window_width / 2.f;
+	timeBarSprite->position.y = timeBarSprite->size.y / 2.f;
 
 
-#pragma region マップファイル
+	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
+#pragma endregion 時間表す棒
+
+#pragma endregion スプライト
+
+#pragma region マップファイル読み込み
 
 	loadMapFile(mapCSVFilePath);
 
-#pragma endregion マップファイル
+#pragma endregion マップファイル読み込み
 
-#pragma region 3Dオブジェクト
+#pragma region オブジェクト3D
 
 #pragma region マップ
 
@@ -564,8 +573,10 @@ void BaseStage::init() {
 	constexpr float mapPosY = -150.f;
 	floorPosY = mapPosY;
 
+	mapObj.reserve(mapData.size());
 	for (UINT y = 0, loopLenY = mapData.size(); y < loopLenY; ++y) {
 		mapObj.emplace_back();
+		mapObj[y].reserve(mapData[y].size());
 		for (UINT x = 0, loopLenX = mapData[y].size(); x < loopLenX; ++x) {
 			mapObj[y].emplace_back(Object3d(DirectXCommon::getInstance()->getDev(), model.get(), BOX_TEXNUM::WALL));
 			mapObj[y][x].scale = XMFLOAT3(obj3dScale, obj3dScale, obj3dScale);
@@ -644,7 +655,10 @@ void BaseStage::init() {
 
 #pragma endregion プレイヤー
 
-#pragma endregion 3Dオブジェクト
+	// 進めない道を壁にする
+	updateMovableRoad();
+
+#pragma endregion オブジェクト3D
 
 #pragma region ライト
 
@@ -678,6 +692,7 @@ void BaseStage::init() {
 }
 
 void BaseStage::update() {
+	// ステージ選択画面に戻る操作
 	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
 
 	// 天球回転
@@ -724,9 +739,7 @@ void BaseStage::update() {
 						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
 
-	const float timeRaito = (clearCount - beatChangeNum) / (float)clearCount;
-
-	timeBarSprite->size.x = timeBarWid * timeRaito;
+	timeBarSprite->size.x = timeBarWid * raito;
 
 	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
 
@@ -758,20 +771,25 @@ void BaseStage::draw() {
 void BaseStage::drawObj3d() {
 	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), object3dPipelineSet);
 
+	// 壁描画
 	for (auto& y : mapObj) {
 		for (auto& x : y) {
 			x.drawWithUpdate(camera->getViewMatrix(), dxCom);
 		}
 	}
 
+	// 自機描画
 	playerObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 
+	// ゴールモデル描画
 	for (auto& i : goalObj) {
 		i.drawWithUpdate(camera->getViewMatrix(), dxCom);
 	}
 
+	// その他の描画指定があれば描画
 	additionalDrawObj3d();
 
+	// 背景描画
 	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), backPipelineSet);
 	backObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 }

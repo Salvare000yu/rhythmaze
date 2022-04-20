@@ -62,8 +62,7 @@ void EndScene::update() {
 
 	debugText.Print(spCom, "SPACE : back Stage select", 0, WinAPI::window_height / 2.f);
 
-	debugText.formatPrint(spCom, 0, WinAPI::window_height / 2.f + debugText.fontHeight * 2, 1.f,
-						  DirectX::XMFLOAT4(1, 1, 1, 1), clearinfiStr);
+	debugText.Print(spCom, clearinfiStr, 0, WinAPI::window_height / 2.f + debugText.fontHeight * 2);
 }
 
 void EndScene::draw() {

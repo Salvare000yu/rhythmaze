@@ -25,7 +25,7 @@ void PlayScene::pathInit() {
 
 	//effectTexPath = L"Resources/effect1.png";
 
-	bgmFilePath = "Resources/Music/mmc_125_BGM2.wav";
+	bgmFilePath = "Resources/Music/rhythmaze_tutorialpoi.wav";
 
 	//particleSeFilePath = "Resources/SE/Sys_Set03-click.wav";
 }
@@ -34,7 +34,7 @@ void PlayScene::pathInit() {
 void PlayScene::additionalInit() {
 	stageNum = 1u;
 
-	musicBpm = 125;
+	musicBpm = 100.f;
 
 	bgmBolume = 0.4f;
 
