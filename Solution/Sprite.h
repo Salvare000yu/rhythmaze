@@ -92,7 +92,7 @@ public:
 										   const wchar_t* psPath = L"Resources/Shaders/SpritePS.hlsl");
 
 	// スプライト共通テクスチャ読み込み
-	static void commonLoadTexture(SpriteCommon& spriteCommon,
+	static XMFLOAT2 commonLoadTexture(SpriteCommon& spriteCommon,
 								  UINT texnumber, const wchar_t* filename,
 								  ID3D12Device* dev);
 

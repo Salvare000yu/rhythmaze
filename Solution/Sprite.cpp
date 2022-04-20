@@ -207,7 +207,7 @@ Sprite::SpriteCommon Sprite::createSpriteCommon(ID3D12Device* dev,
 }
 
 // スプライト共通テクスチャ読み込み
-void Sprite::commonLoadTexture(SpriteCommon& spriteCommon, UINT texnumber, const wchar_t* filename, ID3D12Device* dev) {
+XMFLOAT2 Sprite::commonLoadTexture(SpriteCommon& spriteCommon, UINT texnumber, const wchar_t* filename, ID3D12Device* dev) {
 	// 異常な番号の指定を検出
 	assert(texnumber <= spriteSRVCount - 1);
 
@@ -268,6 +268,8 @@ void Sprite::commonLoadTexture(SpriteCommon& spriteCommon, UINT texnumber, const
 				D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
 		)
 	);
+
+	return XMFLOAT2(metadata.width, metadata.height);
 }
 
 // スプライト共通グラフィックコマンドのセット

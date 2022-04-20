@@ -7,21 +7,21 @@
 using namespace DirectX;
 
 namespace {
-	constexpr XMFLOAT4 selectCol = XMFLOAT4(0.75f, 0, 0.75f, 1);
-	constexpr XMFLOAT4 unSelectCol = XMFLOAT4(0, 0.5f, 0.5f, 1);
+	constexpr XMFLOAT4 selectCol = XMFLOAT4(0.827f, 0.345f, 0.443f, 1);
+	constexpr XMFLOAT4 unSelectCol = XMFLOAT4(0.367f, 0.685f, 0.427f, 1);
 	constexpr float unSelectScale = 0.75f, selectScale = 1.f;
 
 	// todo ステージを追加したらここも増やす
 	constexpr UINT stageNum = 7;	// ステージの総数
 	constexpr UINT spriteNum = stageNum + 1;	// ステージ数 + 操作説明シーン
 
-	XMFLOAT2 operator*(const XMFLOAT2& left, const float right) {
+	inline XMFLOAT2 operator*(const XMFLOAT2& left, const float right) {
 		return XMFLOAT2(left.x * right, left.y * right);
 	}
-	XMFLOAT2 operator*(const float left, const XMFLOAT2 right) {
+	inline XMFLOAT2 operator*(const float left, const XMFLOAT2 right) {
 		return XMFLOAT2(left * right.x, left * right.y);
 	}
-	XMFLOAT2 operator*(const XMFLOAT2 left, const XMFLOAT2 right) {
+	inline XMFLOAT2 operator*(const XMFLOAT2 left, const XMFLOAT2 right) {
 		return XMFLOAT2(left.x * right.x, left.y * right.y);
 	}
 }
@@ -34,26 +34,66 @@ void StageSelect::init() {
 	// --------------------
 	spCom = Sprite::createSpriteCommon(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height);
 
-	const auto backSpriteNum = debugTextTexNumber - 1;
+	constexpr auto stageNumTexNum = 0;
+	constexpr auto backSpriteNum = stageNumTexNum + 1;
+	constexpr auto leftArrowTexNum = backSpriteNum + 1;
+	constexpr auto arrowStrTexNum = leftArrowTexNum + 1;
+	constexpr auto returnTitleTexNum = arrowStrTexNum + 1;
+	constexpr auto space2SelectTexNum = returnTitleTexNum + 1;
+	constexpr auto moveFirstTexNum = space2SelectTexNum + 1;
+	constexpr auto moveLastTexNum = moveFirstTexNum + 1;
+	constexpr auto backTexNum = moveLastTexNum + 1;
+	constexpr auto cursorTexNum = backTexNum + 1;
+	// --------------------
 	// スプライト共通テクスチャ読み込み
-	Sprite::commonLoadTexture(spCom, 0, L"Resources/StageSelect/select_Explanation.png", DirectXCommon::getInstance()->getDev());
-	Sprite::commonLoadTexture(spCom, 1, L"Resources/StageSelect/Stage1.png", DirectXCommon::getInstance()->getDev());
-	Sprite::commonLoadTexture(spCom, 2, L"Resources/StageSelect/Stage2.png", DirectXCommon::getInstance()->getDev());
-	Sprite::commonLoadTexture(spCom, 3, L"Resources/StageSelect/Stage3.png", DirectXCommon::getInstance()->getDev());
-	Sprite::commonLoadTexture(spCom, 4, L"Resources/StageSelect/Stage4.png", DirectXCommon::getInstance()->getDev());
-	Sprite::commonLoadTexture(spCom, 5, L"Resources/StageSelect/Stage5.png", DirectXCommon::getInstance()->getDev());
-	Sprite::commonLoadTexture(spCom, 6, L"Resources/StageSelect/Stage6.png", DirectXCommon::getInstance()->getDev());
-	Sprite::commonLoadTexture(spCom, 7, L"Resources/StageSelect/Stage7.png", DirectXCommon::getInstance()->getDev());
-	Sprite::commonLoadTexture(spCom, backSpriteNum, L"Resources/StageSelect/select_back.png", DirectXCommon::getInstance()->getDev());
+	// --------------------
+	// 画像サイズ
+	const auto stageGraphSize = Sprite::commonLoadTexture(spCom, stageNumTexNum,
+														  L"Resources/StageSelect/stageNum.png",
+														  DirectXCommon::getInstance()->getDev());
+	Sprite::commonLoadTexture(spCom, backSpriteNum,
+							  L"Resources/StageSelect/select_back.png",
+							  DirectXCommon::getInstance()->getDev());
 
+	Sprite::commonLoadTexture(spCom, leftArrowTexNum, L"Resources/arrow/LeftArrow.png", DirectXCommon::getInstance()->getDev());
+	Sprite::commonLoadTexture(spCom, arrowStrTexNum, L"Resources/arrow/Arrow_Str.png", DirectXCommon::getInstance()->getDev());
+	Sprite::commonLoadTexture(spCom, returnTitleTexNum, L"Resources/returnTitle/returnTitle.png", DirectXCommon::getInstance()->getDev());
+	Sprite::commonLoadTexture(spCom, space2SelectTexNum, L"Resources/selectSceneStr/Select.png", DirectXCommon::getInstance()->getDev());
+	Sprite::commonLoadTexture(spCom, moveFirstTexNum, L"Resources/selectSceneStr/moveExplanation.png", DirectXCommon::getInstance()->getDev());
+	Sprite::commonLoadTexture(spCom, moveLastTexNum, L"Resources/selectSceneStr/moveLastStage.png", DirectXCommon::getInstance()->getDev());
+	Sprite::commonLoadTexture(spCom, backTexNum, L"Resources/selectSceneStr/Background.png", DirectXCommon::getInstance()->getDev());
+	Sprite::commonLoadTexture(spCom, cursorTexNum, L"Resources/StageSelect/cursor.png", DirectXCommon::getInstance()->getDev());
+
+	back.reset(new Sprite());
+	back->create(DirectXCommon::getInstance()->getDev(),
+				 WinAPI::window_width, WinAPI::window_height,
+				 backTexNum,
+				 spCom, XMFLOAT2(0, 0));
+
+	cursor.reset(new Sprite());
+	cursor->create(DirectXCommon::getInstance()->getDev(),
+				   WinAPI::window_width, WinAPI::window_height,
+				   cursorTexNum, spCom);
+	cursor->position = XMFLOAT3(WinAPI::window_width / 2.f,
+								WinAPI::window_height / 2.f,
+								1.f);
+	cursor->SpriteTransferVertexBuffer(spCom);
+
+	const auto numGraphNum = stageGraphSize.x / stageGraphSize.y;	// 正方形を想定
+	const auto oneGraphWid = stageGraphSize.x / numGraphNum;		// 数字一つ分の画像横幅
+
+	stage.reserve(spriteNum);
 	for (UINT i = 0u; i < spriteNum; ++i) {
 		stage.emplace_back();
 
 		stage[i].create(
 			DirectXCommon::getInstance()->getDev(),
 			WinAPI::window_width, WinAPI::window_height,
-			i, spCom
+			stageNumTexNum, spCom
 		);
+		stage[i].texLeftTop.x = i * oneGraphWid;
+		stage[i].texSize.x = oneGraphWid;
+
 		const auto grWid = stage[0].size.x * 1.5f;
 		stage[i].position.x = grWid * i + WinAPI::window_width / 2.f;
 		stage[i].position.y = WinAPI::window_height / 2.f;
@@ -69,6 +109,7 @@ void StageSelect::init() {
 
 
 	// 各ステージ画像の背景
+	stageBack.reserve(stage.size());
 	for (UINT i = 0u, size = stage.size(); i < size; i++) {
 		stageBack.emplace_back();
 
@@ -83,19 +124,76 @@ void StageSelect::init() {
 		stageBack[i].SpriteTransferVertexBuffer(spCom);
 	}
 
-	// 3Dオブジェクト用パイプライン生成
-	object3dPipelineSet = Object3d::createGraphicsPipeline(DirectXCommon::getInstance()->getDev());
+
+	// 矢印
+	constexpr UINT arrowNum = 2u;
+	arrow.resize(arrowNum);
+
+	for (auto& i : arrow) {
+		i.create(DirectXCommon::getInstance()->getDev(),
+				 WinAPI::window_width, WinAPI::window_height,
+				 leftArrowTexNum, spCom, XMFLOAT2(1.f, 0.5f));
+		i.position.x = WinAPI::window_width / 2.f;
+		i.position.y = WinAPI::window_height / 3.f;
+	}
+	arrow[ARROW_TEX::RIGHT_ARROW].isFlipX = true;
+	//arrow[ARROW_TEX::RIGHT_ARROW].anchorpoint.x = 0.f;
+
+	arrow[ARROW_TEX::LEFT_ARROW].isInvisible = !(bool)nowSelect;
+	arrow[ARROW_TEX::RIGHT_ARROW].isInvisible = nowSelect >= stageNum;
+
+	for (auto& i : arrow) {
+		i.SpriteTransferVertexBuffer(spCom);
+	}
+
+	arrowStr.reset(new Sprite());
+	arrowStr->create(DirectXCommon::getInstance()->getDev(),
+					 WinAPI::window_width, WinAPI::window_height,
+					 arrowStrTexNum, spCom, XMFLOAT2(0.5f, 0));
+	arrowStr->position.x = WinAPI::window_width / 2.f;
+	arrowStr->position.y = WinAPI::window_height / 3.f - arrowStr->size.y;
+
+	// 操作の説明文字
+	returnTitle.reset(new Sprite());
+	returnTitle->create(DirectXCommon::getInstance()->getDev(),
+						WinAPI::window_width, WinAPI::window_height,
+						returnTitleTexNum, spCom, XMFLOAT2(0.125f, 0));
+	returnTitle->position.y = WinAPI::window_height - returnTitle->size.y;
+
+	space2Select.reset(new Sprite());
+	space2Select->create(DirectXCommon::getInstance()->getDev(),
+						 WinAPI::window_width, WinAPI::window_height,
+						 space2SelectTexNum, spCom, XMFLOAT2(0.5f, 0.625));
+	space2Select->position.x = WinAPI::window_width / 2.f;
+	space2Select->position.y = WinAPI::window_height * 0.66666f;
+	space2Select->SpriteTransferVertexBuffer(spCom);
 
 
-	/*spCom = Sprite::createSpriteCommon(DirectXCommon::getInstance()->getDev(),
-		WinAPI::window_width, WinAPI::window_height);*/
+	for (UINT i = 0; i < 2; i++) {
+		shiftAndArrow.emplace_back();
+		shiftAndArrow[i].create(DirectXCommon::getInstance()->getDev(),
+								WinAPI::window_width, WinAPI::window_height,
+								moveFirstTexNum + i, spCom, XMFLOAT2(0.5f, 0.625));
+		shiftAndArrow[i].position = space2Select->position;
+		shiftAndArrow[i].position.y += space2Select->size.y * 0.5f * (i + 1);
 
-		// デバッグテキスト用のテクスチャ読み込み
+		shiftAndArrow[i].isInvisible = arrow[i].isInvisible;
+
+		shiftAndArrow[i].SpriteTransferVertexBuffer(spCom);
+	}
+
+
+	// デバッグテキスト用のテクスチャ読み込み
 	Sprite::commonLoadTexture(spCom, debugTextTexNumber, L"Resources/debugfont.png", DirectXCommon::getInstance()->getDev());
 
 	debugText.Initialize(DirectXCommon::getInstance()->getDev(),
 						 WinAPI::window_width, WinAPI::window_height,
 						 debugTextTexNumber, spCom);
+
+
+
+	// 3Dオブジェクト用パイプライン生成
+	object3dPipelineSet = Object3d::createGraphicsPipeline(DirectXCommon::getInstance()->getDev());
 }
 
 void StageSelect::update() {
@@ -143,6 +241,12 @@ void StageSelect::update() {
 
 				stage[i].SpriteTransferVertexBuffer(spCom);
 				stageBack[i].SpriteTransferVertexBuffer(spCom);
+
+				arrow[ARROW_TEX::LEFT_ARROW].isInvisible = !(bool)nowSelect;
+				arrow[ARROW_TEX::RIGHT_ARROW].isInvisible = nowSelect >= stageNum;
+
+				shiftAndArrow[0].isInvisible = arrow[ARROW_TEX::LEFT_ARROW].isInvisible;
+				shiftAndArrow[1].isInvisible = arrow[ARROW_TEX::RIGHT_ARROW].isInvisible;
 			}
 
 			stage[nowSelect].size = selectScale * stage[nowSelect].texSize;
@@ -188,39 +292,27 @@ void StageSelect::update() {
 			SceneManager::getInstange()->changeScene(SELECT);
 		}
 	}
-
-	debugText.Print(spCom, "R : BACK_TITLE", debugText.fontWidth * 1.5f, WinAPI::window_height - debugText.fontHeight * 1.5f);
-
-
-	debugText.Print(spCom, "arrow key", WinAPI::window_width / 2 - debugText.fontWidth * 4.5f, WinAPI::window_height / 3 - debugText.fontHeight);
-	if (nowSelect > 0) debugText.Print(spCom, "<-", WinAPI::window_width / 2 - debugText.fontWidth * 2.5f, WinAPI::window_height / 3);
-	if (nowSelect < stageNum) debugText.Print(spCom, "->", WinAPI::window_width / 2 + debugText.fontWidth * 0.5, WinAPI::window_height / 3);
-
-	debugText.Print(spCom,
-					"SPACE : SELECT",
-					WinAPI::window_width / 2 - debugText.fontWidth * 6,
-					WinAPI::window_height / 3.f * 2 - debugText.fontHeight);
-	if (nowSelect > 0) {
-		debugText.Print(spCom,
-						"LSHIFT + <- : MOVE_Setsumei",
-						WinAPI::window_width / 2 - debugText.fontWidth * 12,
-						WinAPI::window_height / 3.f * 2);
-	}
-	if (nowSelect < stageNum) {
-		debugText.Print(spCom,
-						"LSHIFT + -> : MOVE_LAST_STAGE",
-						WinAPI::window_width / 2 - debugText.fontWidth * 12,
-						WinAPI::window_height / 3.f * 2 + debugText.fontHeight);
-	}
 }
 
 void StageSelect::draw() {
 	// スプライト共通コマンド
 	Sprite::drawStart(spCom, DirectXCommon::getInstance()->getCmdList());
+	// 背景
+	back->drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	// スプライト描画
+	cursor->drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	for (UINT i = 0, size = stage.size(); i < size; ++i) {
 		stageBack[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
 		stage[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	}
+	arrowStr->drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	for (auto& i : arrow) {
+		i.drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	}
+	returnTitle->drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	space2Select->drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	for (auto& i : shiftAndArrow) {
+		i.drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	}
 	// デバッグテキスト描画
 	debugText.DrawAll(DirectXCommon::getInstance(), spCom);

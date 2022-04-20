@@ -30,6 +30,15 @@ class StageSelect :
 	std::vector<Sprite> stageBack;
 	UINT nowSelect = 0;
 
+	enum ARROW_TEX { LEFT_ARROW, RIGHT_ARROW };
+	std::vector<Sprite> arrow;
+	std::unique_ptr<Sprite> arrowStr;
+	std::unique_ptr<Sprite> returnTitle;
+	std::unique_ptr<Sprite> space2Select;
+	std::vector<Sprite> shiftAndArrow;
+	std::unique_ptr<Sprite> back;
+	std::unique_ptr<Sprite> cursor;
+
 	DebugText debugText{};
 	// デバッグテキスト用のテクスチャ番号を指定
 	const UINT debugTextTexNumber = Sprite::spriteSRVCount - 1;
