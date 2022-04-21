@@ -12,7 +12,7 @@ namespace {
 	constexpr float unSelectScale = 0.75f, selectScale = 1.f;
 
 	// todo ステージを追加したらここも増やす
-	constexpr UINT stageNum = 8;	// ステージの総数
+	constexpr UINT stageNum = 9;	// ステージの総数
 	constexpr UINT spriteNum = stageNum + 1;	// ステージ数 + 操作説明シーン
 
 	inline XMFLOAT2 operator*(const XMFLOAT2& left, const float right) {
@@ -256,6 +256,7 @@ void StageSelect::update() {
 			stageBack[nowSelect].size = selectScale * stageBack[nowSelect].texSize;
 			stageBack[nowSelect].SpriteTransferVertexBuffer(spCom);
 
+			// undone シーンを追加する際は此処の分岐も増やす
 			switch (nowSelect) {
 			case 0:
 				SELECT = SCENE_NUM::EXPLANATION;
@@ -283,6 +284,9 @@ void StageSelect::update() {
 				break;
 			case 8:
 				SELECT = SCENE_NUM::STAGE8;
+				break;
+			case 9:
+				SELECT = SCENE_NUM::STAGE9;
 				break;
 			default:
 				SELECT = SCENE_NUM::EXPLANATION;
