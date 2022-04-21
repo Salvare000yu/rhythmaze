@@ -12,7 +12,7 @@ namespace {
 	constexpr float unSelectScale = 0.75f, selectScale = 1.f;
 
 	// todo ステージを追加したらここも増やす
-	constexpr UINT stageNum = 7;	// ステージの総数
+	constexpr UINT stageNum = 8;	// ステージの総数
 	constexpr UINT spriteNum = stageNum + 1;	// ステージ数 + 操作説明シーン
 
 	inline XMFLOAT2 operator*(const XMFLOAT2& left, const float right) {
@@ -280,6 +280,9 @@ void StageSelect::update() {
 				break;
 			case 7:
 				SELECT = SCENE_NUM::STAGE7;
+				break;
+			case 8:
+				SELECT = SCENE_NUM::STAGE8;
 				break;
 			default:
 				SELECT = SCENE_NUM::EXPLANATION;

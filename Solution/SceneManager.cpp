@@ -11,6 +11,7 @@
 #include "Stage5.h"
 #include "Stage6.h"
 #include "Stage7.h"
+#include "Stage8.h"
 
 #include "Input.h"
 
@@ -73,6 +74,10 @@ void SceneManager::update() {
 			break;
 		case SCENE_NUM::STAGE7:
 			nowScene = new Stage7();
+			break;
+
+		case SCENE_NUM::STAGE8:
+			nowScene = new Stage8();
 			break;
 		}
 

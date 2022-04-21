@@ -170,6 +170,7 @@
     <ClCompile Include="Stage5.cpp" />
     <ClCompile Include="Stage6.cpp" />
     <ClCompile Include="Stage7.cpp" />
+    <ClCompile Include="Stage8.cpp" />
     <ClCompile Include="StageSelect.cpp" />
     <ClCompile Include="System.cpp" />
     <ClCompile Include="Time.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="Stage5.h" />
     <ClInclude Include="Stage6.h" />
     <ClInclude Include="Stage7.h" />
+    <ClInclude Include="Stage8.h" />
     <ClInclude Include="StageSelect.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="Time.h" />
