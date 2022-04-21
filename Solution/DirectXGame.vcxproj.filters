@@ -150,6 +150,12 @@
     <ClCompile Include="Stage7.cpp">
       <Filter>Sceme\Stage</Filter>
     </ClCompile>
+    <ClCompile Include="Stage8.cpp">
+      <Filter>Sceme\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage9.cpp">
+      <Filter>Sceme\Stage</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Input.h">
@@ -246,6 +252,12 @@
       <Filter>Sceme\Stage</Filter>
     </ClInclude>
     <ClInclude Include="Stage7.h">
+      <Filter>Sceme\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage8.h">
+      <Filter>Sceme\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage9.h">
       <Filter>Sceme\Stage</Filter>
     </ClInclude>
   </ItemGroup>
