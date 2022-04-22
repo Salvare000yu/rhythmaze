@@ -150,15 +150,19 @@ void BaseStage::timeOut() {
 
 void BaseStage::updatePlayerPos() {
 
-	// ˆÚ“®‚ÉŽg‚¤ƒL[
-	constexpr auto up = DIK_UP;
-	constexpr auto down = DIK_DOWN;
-	constexpr auto right = DIK_RIGHT;
-	constexpr auto left = DIK_LEFT;
+	// ˆÚ“®“ü—Íî•ñ
+	const bool inputUp = input->triggerKey(DIK_UP);
+	const bool inputDown = input->triggerKey(DIK_DOWN);
+	const bool inputRight = input->triggerKey(DIK_RIGHT);
+	const bool inputLeft = input->triggerKey(DIK_LEFT);
+
+	constexpr uint8_t up = 0b0001;
+	constexpr uint8_t down = 0b0010;
+	constexpr uint8_t left = 0b0100;
+	constexpr uint8_t right = 0b1000;
 
 	// ˆÚ“®‚Ì“ü—Í‚ª‚ ‚Á‚½‚ç
-	if (input->triggerKey(up) || input->triggerKey(down)
-		|| input->triggerKey(left) || input->triggerKey(right)) {
+	if (inputUp || inputDown || inputRight || inputLeft) {
 
 		// ƒS[ƒ‹‚µ‚½‚©‚Ç‚¤‚©
 		bool goalFlag = false;
@@ -169,13 +173,13 @@ void BaseStage::updatePlayerPos() {
 			uint8_t moveDir = 0u;
 
 			// ‰Ÿ‚µ‚½•ûŒü‚ð‹L˜^
-			if (input->triggerKey(up)) {
+			if (inputUp) {
 				moveDir = up;
-			} else if (input->triggerKey(down)) {
+			} else if (inputDown) {
 				moveDir = down;
-			} else if (input->triggerKey(left)) {
+			} else if (inputLeft) {
 				moveDir = left;
-			} else if (input->triggerKey(right)) {
+			} else if (inputRight) {
 				moveDir = right;
 			}
 
@@ -473,7 +477,7 @@ void BaseStage::init() {
 #pragma endregion ƒ^ƒCƒ~ƒ“ƒO‰~
 
 #pragma region Ž¸”sŽž‚ÌÔ‰æ–Ê
-	constexpr UINT redTexNum = 1u;
+	constexpr UINT redTexNum = circleTexNum + 1;
 	Sprite::commonLoadTexture(spriteCommon,
 							  redTexNum,
 							  L"Resources/red.png",
@@ -497,10 +501,10 @@ void BaseStage::init() {
 #pragma endregion Ž¸”sŽž‚ÌÔ‰æ–Ê
 
 #pragma region ŽžŠÔ•\‚·–_
-	constexpr UINT barTexNum = circleTexNum + 1;
+	constexpr UINT barTexNum = redTexNum + 1;
 	Sprite::commonLoadTexture(spriteCommon,
 							  barTexNum,
-							  L"Resources/red.png",
+							  L"Resources/redBar.png",
 							  DirectXCommon::getInstance()->getDev());
 
 	timeBarSprite.reset(new Sprite());
