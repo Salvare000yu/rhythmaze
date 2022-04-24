@@ -32,7 +32,7 @@ void Stage8::pathInit() {
 
 // ’Ç‰Á‚Å‰Šú‰»‚ª•K—v‚È‚ç‚±‚ÌŠÖ”‚Ì’†‚É‘‚­
 void Stage8::additionalInit() {
-	stageNum = 7u;
+	stageNum = 8u;
 
 	musicBpm = 125.f;
 
