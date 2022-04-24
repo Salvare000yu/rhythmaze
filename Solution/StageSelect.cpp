@@ -201,18 +201,15 @@ void StageSelect::update() {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
 	}
 
-	constexpr auto right = DIK_RIGHT;
-	constexpr auto left = DIK_LEFT;
+	const auto inputR = input->triggerKey(DIK_RIGHT) || input->triggerKey(DIK_D);
+	const auto inputL = input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_A);
+	const auto inputShift = input->hitKey(DIK_LSHIFT) || input->hitKey(DIK_RSHIFT);
 
-	const auto inputR = input->triggerKey(right);
-	const auto inputL = input->triggerKey(left);
-	const auto inputLShift = input->hitKey(DIK_LSHIFT);
-
-	if (inputR || inputL || inputLShift) {
+	if (inputR || inputL || inputShift) {
 
 		bool changeFlag = false;
 
-		if (inputLShift) {
+		if (inputShift) {
 			if (inputL) {
 				nowSelect = 0;
 				changeFlag = true;
