@@ -9,6 +9,8 @@
 
 #include <memory>
 
+#include "Time.h"
+
 class TitleScene :
 	public GameScene {
 
@@ -26,6 +28,13 @@ class TitleScene :
 
 	std::unique_ptr<Sound::SoundCommon> soundCom;
 	std::unique_ptr<Sound> bgm;
+
+	std::unique_ptr<Sound> sceneChangeSe;
+
+	bool startEaseFlag = true;
+	std::unique_ptr<Time> easeTimer;
+
+	bool endEaseFlag = false;
 
 public:
 	void init() override;

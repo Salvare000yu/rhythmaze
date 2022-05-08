@@ -258,7 +258,8 @@ public:
 	// @return 読み込んだcsvの中身。失敗したらデフォルトコンストラクタで初期化された空のvector2次元配列が返る
 	static std::vector<std::vector<std::string>> loadCsv(const std::string& csvFilePath);
 
-	void loadMapFile(const std::string& csvFilePath);
+	// @param startPosition : 最初に見つかった道のマップ座標を格納する
+	void loadMapFile(const std::string& csvFilePath, DirectX::XMFLOAT2* startPosition = nullptr);
 
 };
 

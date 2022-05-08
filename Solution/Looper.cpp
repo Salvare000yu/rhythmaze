@@ -41,13 +41,13 @@ bool Looper::loop() {
 	// --------------------
 	// シーンマネージャーの描画
 	// --------------------
-	constexpr DirectX::XMFLOAT3 clearColor = { 0.375f, 0.375f, 0.375f };	//青っぽい色
+	constexpr DirectX::XMFLOAT3 clearColor = { 34.f / 255, 32.f / 255, 52.f / 255 };	//青っぽい色
 	DirectXCommon::getInstance()->startDraw(clearColor);
 
 	SceneManager::getInstange()->draw();
 
 	DirectXCommon::getInstance()->endDraw();
-	
+
 
 	return false;
 }
