@@ -194,6 +194,11 @@ void StageSelect::init() {
 
 	// 3Dオブジェクト用パイプライン生成
 	object3dPipelineSet = Object3d::createGraphicsPipeline(DirectXCommon::getInstance()->getDev());
+
+
+
+	soundCom.reset(new Sound::SoundCommon());
+	sceneChangeSe.reset(new Sound("Resources/SE/Shortbridge29-1.wav", soundCom.get()));
 }
 
 void StageSelect::update() {
@@ -293,7 +298,36 @@ void StageSelect::update() {
 	} else {
 		// スペースを押したら選んだシーンに移動
 		if (input->triggerKey(DIK_SPACE)) {
+			//SceneManager::getInstange()->changeScene(SELECT);
+			sceneChangeFlag = true;
+			sceneChangeTimer.reset(new Time());
+			Sound::SoundPlayWave(soundCom.get(), sceneChangeSe.get());
+		}
+	}
+
+	if (sceneChangeFlag) {
+		constexpr float sceneChangeTime = Time::oneSec * 0.75f;
+		const float raito = (float)sceneChangeTimer->getNowTime() / sceneChangeTime;
+		if (raito > 1.f) {
 			SceneManager::getInstange()->changeScene(SELECT);
+		} else {
+			const auto easeRaito = pow(raito, 3);
+
+			const XMFLOAT2 easeScaleMin = stage[nowSelect].size;
+			const XMFLOAT2 easeScaleMax = easeScaleMin * 2.5f;
+
+			stage[nowSelect].size.x = easeScaleMax.x * easeRaito + easeScaleMin.x;
+			stage[nowSelect].size.y = easeScaleMax.y * easeRaito + easeScaleMin.y;
+			stage[nowSelect].rotation = easeRaito * 720.f;
+			stage[nowSelect].SpriteTransferVertexBuffer(spCom);
+
+			stageBack[nowSelect].size = stage[nowSelect].size;
+			stageBack[nowSelect].rotation = stage[nowSelect].rotation;
+			stageBack[nowSelect].SpriteTransferVertexBuffer(spCom);
+
+			cursor->size = stage[nowSelect].size;
+			cursor->rotation = stage[nowSelect].rotation;
+			cursor->SpriteTransferVertexBuffer(spCom);
 		}
 	}
 }

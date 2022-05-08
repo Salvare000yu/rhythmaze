@@ -151,10 +151,10 @@ void BaseStage::timeOut() {
 void BaseStage::updatePlayerPos() {
 
 	// 移動入力情報
-	const bool inputUp = input->triggerKey(DIK_UP);
-	const bool inputDown = input->triggerKey(DIK_DOWN);
-	const bool inputRight = input->triggerKey(DIK_RIGHT);
-	const bool inputLeft = input->triggerKey(DIK_LEFT);
+	const bool inputUp = input->triggerKey(DIK_UP) || input->triggerKey(DIK_W);
+	const bool inputDown = input->triggerKey(DIK_DOWN) || input->triggerKey(DIK_S);
+	const bool inputRight = input->triggerKey(DIK_RIGHT) || input->triggerKey(DIK_D);
+	const bool inputLeft = input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_A);
 
 	constexpr uint8_t up = 0b0001;
 	constexpr uint8_t down = 0b0010;
@@ -399,8 +399,11 @@ std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string& csvF
 	return csvData;
 }
 
-void BaseStage::loadMapFile(const std::string& csvFilePath) {
+void BaseStage::loadMapFile(const std::string& csvFilePath, DirectX::XMFLOAT2* startPosition) {
 	const auto mapFileData = loadCsv(csvFilePath);
+
+	bool findStartPosFlag = false;
+	XMFLOAT2 startPos{};
 
 	for (UINT y = 0, yLen = mapFileData.size(); y < yLen; y++) {
 		mapData.emplace_back();
@@ -413,8 +416,16 @@ void BaseStage::loadMapFile(const std::string& csvFilePath) {
 				mapData[y][x] = MAP_NUM::WALL;
 			} else if (chip == "2") {
 				mapData[y][x] = MAP_NUM::FRONT_ROAD;
+				if (!findStartPosFlag) {
+					startPos = XMFLOAT2(x, y);
+					findStartPosFlag = true;
+				}
 			} else if (chip == "3") {
 				mapData[y][x] = MAP_NUM::BACK_ROAD;
+				if (!findStartPosFlag) {
+					startPos = XMFLOAT2(x, y);
+					findStartPosFlag = true;
+				}
 			} else if (chip == "4") {
 				mapData[y][x] = MAP_NUM::GOAL;
 			} else {
@@ -422,6 +433,8 @@ void BaseStage::loadMapFile(const std::string& csvFilePath) {
 			}
 		}
 	}
+
+	if (startPosition != nullptr) *startPosition = startPos;
 }
 
 
@@ -526,7 +539,7 @@ void BaseStage::init() {
 
 #pragma region マップファイル読み込み
 
-	loadMapFile(mapCSVFilePath);
+	loadMapFile(mapCSVFilePath, &playerMapPos);
 
 #pragma endregion マップファイル読み込み
 
@@ -563,8 +576,8 @@ void BaseStage::init() {
 							  goalModelPath.c_str(), goalModelTexPath.c_str(),
 							  WinAPI::window_width, WinAPI::window_height,
 							  Object3d::constantBufferNum, goalTexNum));
-	XMFLOAT3 goalObjScale = XMFLOAT3(4, 4, 4);
-	XMFLOAT3 goalObjRotation = XMFLOAT3(0, 90, 90);
+	constexpr XMFLOAT3 goalObjScale = XMFLOAT3(4, 4, 4);
+	constexpr XMFLOAT3 goalObjRotation = XMFLOAT3(0, 90, 90);
 
 #pragma endregion マップ
 
@@ -633,9 +646,6 @@ void BaseStage::init() {
 
 #pragma region プレイヤー
 
-	constexpr XMFLOAT2 startMapPos = XMFLOAT2(1, 1);
-	playerMapPos = startMapPos;
-
 	playerModel.reset(new Model(DirectXCommon::getInstance()->getDev(),
 								playerModelPath.c_str(), playerModelTexPath.c_str(),
 								WinAPI::window_width, WinAPI::window_height,
@@ -647,7 +657,7 @@ void BaseStage::init() {
 
 	playerObj->scale = { playerScale, playerScale, playerScale };
 
-	playerObj->position = mapObj[startMapPos.y][startMapPos.x].position;
+	playerObj->position = mapObj[playerMapPos.y][playerMapPos.x].position;
 	playerObj->position.y += mapSide;
 
 	playerObj->rotation.y += 90.f;

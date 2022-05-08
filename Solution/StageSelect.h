@@ -13,6 +13,10 @@
 
 #include <vector>
 
+#include "Time.h"
+
+#include "Sound.h"
+
 class StageSelect :
 	public GameScene {
 
@@ -47,6 +51,15 @@ class StageSelect :
 
 	// 3Dオブジェクト用パイプライン生成
 	Object3d::PipelineSet object3dPipelineSet;
+
+	bool sceneChangeFlag = false;
+	float sceneChangeScale = 1.f;
+
+	std::unique_ptr<Time> sceneChangeTimer;
+
+
+	std::unique_ptr<Sound::SoundCommon> soundCom;
+	std::unique_ptr<Sound> sceneChangeSe;
 
 public:
 	void init() override;
