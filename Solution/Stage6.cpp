@@ -25,7 +25,7 @@ void Stage6::pathInit() {
 
 	//effectTexPath = L"Resources/effect1.png";
 
-	bgmFilePath = "Resources/Music/mmc_125_BGM2.wav";
+	bgmFilePath = "Resources/Music/A_rhythmaze_125.wav";
 
 	//particleSeFilePath = "Resources/SE/Sys_Set03-click.wav";
 }
@@ -52,10 +52,4 @@ void Stage6::spriteInit() {
 						  XMFLOAT2(0, 0),
 						  false, false);
 	}
-}
-
-void Stage6::additionalDrawSprite() {
-	/*for (auto& i: sprites) {
-		i.drawWithUpdate(dxCom, spriteCommon);
-	}*/
 }

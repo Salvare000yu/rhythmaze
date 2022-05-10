@@ -22,7 +22,5 @@ private:
 
 	void spriteInit();
 
-	void additionalDrawSprite() override;
-
 };
 

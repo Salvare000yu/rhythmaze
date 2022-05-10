@@ -204,104 +204,103 @@ void StageSelect::init() {
 void StageSelect::update() {
 	if (input->triggerKey(DIK_R)) {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
-	}
+	} else if (!sceneChangeFlag) {
+		const auto inputR = input->triggerKey(DIK_RIGHT) || input->triggerKey(DIK_D);
+		const auto inputL = input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_A);
+		const auto inputShift = input->hitKey(DIK_LSHIFT) || input->hitKey(DIK_RSHIFT);
 
-	const auto inputR = input->triggerKey(DIK_RIGHT) || input->triggerKey(DIK_D);
-	const auto inputL = input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_A);
-	const auto inputShift = input->hitKey(DIK_LSHIFT) || input->hitKey(DIK_RSHIFT);
+		if (inputR || inputL || inputShift) {
+			bool changeFlag = false;
 
-	if (inputR || inputL || inputShift) {
-
-		bool changeFlag = false;
-
-		if (inputShift) {
-			if (inputL) {
-				nowSelect = 0;
+			if (inputShift) {
+				if (inputL) {
+					nowSelect = 0;
+					changeFlag = true;
+				} else if (inputR) {
+					nowSelect = stageNum;
+					changeFlag = true;
+				}
+			} else if (nowSelect > 0 && inputL) {
+				nowSelect--;
 				changeFlag = true;
-			} else if (inputR) {
-				nowSelect = stageNum;
+			} else if (nowSelect < stage.size() - 1 && inputR) {
+				nowSelect++;
 				changeFlag = true;
 			}
-		} else if (nowSelect > 0 && inputL) {
-			nowSelect--;
-			changeFlag = true;
-		} else if (nowSelect < stage.size() - 1 && inputR) {
-			nowSelect++;
-			changeFlag = true;
-		}
 
-		if (changeFlag) {
-			for (UINT i = 0, size = stage.size(); i < size; ++i) {
-				const auto grWid = stage[0].size.x * 1.5f;
-				stage[i].position.x = grWid * i - (nowSelect * grWid) + WinAPI::window_width / 2.f;
-				stageBack[i].position.x = stage[i].position.x;
+			if (changeFlag) {
+				for (UINT i = 0, size = stage.size(); i < size; ++i) {
+					const auto grWid = stage[0].size.x * 1.5f;
+					stage[i].position.x = grWid * i - (nowSelect * grWid) + WinAPI::window_width / 2.f;
+					stageBack[i].position.x = stage[i].position.x;
 
-				stageBack[i].size = unSelectScale * stage[0].texSize;
+					stageBack[i].size = unSelectScale * stage[0].texSize;
 
-				stage[i].size = unSelectScale * stage[0].texSize;
-				stage[i].color = unSelectCol;
+					stage[i].size = unSelectScale * stage[0].texSize;
+					stage[i].color = unSelectCol;
 
-				stage[i].SpriteTransferVertexBuffer(spCom);
-				stageBack[i].SpriteTransferVertexBuffer(spCom);
+					stage[i].SpriteTransferVertexBuffer(spCom);
+					stageBack[i].SpriteTransferVertexBuffer(spCom);
 
-				arrow[ARROW_TEX::LEFT_ARROW].isInvisible = !(bool)nowSelect;
-				arrow[ARROW_TEX::RIGHT_ARROW].isInvisible = nowSelect >= stageNum;
+					arrow[ARROW_TEX::LEFT_ARROW].isInvisible = !(bool)nowSelect;
+					arrow[ARROW_TEX::RIGHT_ARROW].isInvisible = nowSelect >= stageNum;
 
-				shiftAndArrow[0].isInvisible = arrow[ARROW_TEX::LEFT_ARROW].isInvisible;
-				shiftAndArrow[1].isInvisible = arrow[ARROW_TEX::RIGHT_ARROW].isInvisible;
+					shiftAndArrow[0].isInvisible = arrow[ARROW_TEX::LEFT_ARROW].isInvisible;
+					shiftAndArrow[1].isInvisible = arrow[ARROW_TEX::RIGHT_ARROW].isInvisible;
+				}
+
+				stage[nowSelect].size = selectScale * stage[nowSelect].texSize;
+				stage[nowSelect].color = selectCol;
+				stage[nowSelect].SpriteTransferVertexBuffer(spCom);
+
+				stageBack[nowSelect].size = selectScale * stageBack[nowSelect].texSize;
+				stageBack[nowSelect].SpriteTransferVertexBuffer(spCom);
+
+				// undone シーンを追加する際は此処の分岐も増やす
+				switch (nowSelect) {
+				case 0:
+					SELECT = SCENE_NUM::EXPLANATION;
+					break;
+				case 1:
+					SELECT = SCENE_NUM::STAGE1;
+					break;
+				case 2:
+					SELECT = SCENE_NUM::STAGE2;
+					break;
+				case 3:
+					SELECT = SCENE_NUM::STAGE3;
+					break;
+				case 4:
+					SELECT = SCENE_NUM::STAGE4;
+					break;
+				case 5:
+					SELECT = SCENE_NUM::STAGE5;
+					break;
+				case 6:
+					SELECT = SCENE_NUM::STAGE6;
+					break;
+				case 7:
+					SELECT = SCENE_NUM::STAGE7;
+					break;
+				case 8:
+					SELECT = SCENE_NUM::STAGE8;
+					break;
+				case 9:
+					SELECT = SCENE_NUM::STAGE9;
+					break;
+				default:
+					SELECT = SCENE_NUM::EXPLANATION;
+					break;
+				}
 			}
-
-			stage[nowSelect].size = selectScale * stage[nowSelect].texSize;
-			stage[nowSelect].color = selectCol;
-			stage[nowSelect].SpriteTransferVertexBuffer(spCom);
-
-			stageBack[nowSelect].size = selectScale * stageBack[nowSelect].texSize;
-			stageBack[nowSelect].SpriteTransferVertexBuffer(spCom);
-
-			// undone シーンを追加する際は此処の分岐も増やす
-			switch (nowSelect) {
-			case 0:
-				SELECT = SCENE_NUM::EXPLANATION;
-				break;
-			case 1:
-				SELECT = SCENE_NUM::STAGE1;
-				break;
-			case 2:
-				SELECT = SCENE_NUM::STAGE2;
-				break;
-			case 3:
-				SELECT = SCENE_NUM::STAGE3;
-				break;
-			case 4:
-				SELECT = SCENE_NUM::STAGE4;
-				break;
-			case 5:
-				SELECT = SCENE_NUM::STAGE5;
-				break;
-			case 6:
-				SELECT = SCENE_NUM::STAGE6;
-				break;
-			case 7:
-				SELECT = SCENE_NUM::STAGE7;
-				break;
-			case 8:
-				SELECT = SCENE_NUM::STAGE8;
-				break;
-			case 9:
-				SELECT = SCENE_NUM::STAGE9;
-				break;
-			default:
-				SELECT = SCENE_NUM::EXPLANATION;
-				break;
+		} else {
+			// スペースを押したら選んだシーンに移動
+			if (input->triggerKey(DIK_SPACE)) {
+				//SceneManager::getInstange()->changeScene(SELECT);
+				sceneChangeFlag = true;
+				sceneChangeTimer.reset(new Time());
+				Sound::SoundPlayWave(soundCom.get(), sceneChangeSe.get());
 			}
-		}
-	} else {
-		// スペースを押したら選んだシーンに移動
-		if (input->triggerKey(DIK_SPACE)) {
-			//SceneManager::getInstange()->changeScene(SELECT);
-			sceneChangeFlag = true;
-			sceneChangeTimer.reset(new Time());
-			Sound::SoundPlayWave(soundCom.get(), sceneChangeSe.get());
 		}
 	}
 

@@ -53,9 +53,3 @@ void Stage7::spriteInit() {
 						  false, false);
 	}
 }
-
-void Stage7::additionalDrawSprite() {
-	/*for (auto& i: sprites) {
-		i.drawWithUpdate(dxCom, spriteCommon);
-	}*/
-}
