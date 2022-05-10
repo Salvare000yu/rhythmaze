@@ -20,7 +20,7 @@ using namespace DirectX;
 using namespace Microsoft::WRL;
 
 namespace {
-	constexpr float nearZ = 0.1f, farZ = 1000.f, fog = XM_PI / 3.f;
+	constexpr float nearZ = 0.1f, farZ = 10000.f, fog = XM_PI / 3.f;
 }
 
 void Model::loadModel(ID3D12Device* dev,

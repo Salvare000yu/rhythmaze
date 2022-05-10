@@ -62,6 +62,9 @@ protected:
 	static const UINT timeBarWid = WinAPI::window_width * 0.75f;
 
 	std::unique_ptr<Sprite> red;
+
+	std::unique_ptr<Sprite> vign;
+
 #pragma endregion スプライト
 
 #pragma region デバッグテキスト
@@ -241,7 +244,8 @@ protected:
 	void drawParticle();
 	void drawSprite();
 
-	virtual void additionalDrawSprite() {};
+	virtual void additionalDrawBackSprite() {};
+	virtual void additionalDrawFrontprite() {};
 	virtual void additionalDrawObj3d() {};
 	virtual void additionalDrawParticle() {};
 

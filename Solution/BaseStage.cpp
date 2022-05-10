@@ -97,8 +97,8 @@ void BaseStage::changeBeatProc(const Time::timeType& nowTime) {
 	if (frontBeatFlag) {
 		playerObj->scale = XMFLOAT3(playerScale, playerScale, playerScale);
 	} else {
-		const float backScale = playerScale * 0.8f;
-		playerObj->scale = XMFLOAT3(backScale, backScale, backScale);
+		const float backBeatScale = playerScale * 0.8f;
+		playerObj->scale = XMFLOAT3(backBeatScale, backBeatScale, backBeatScale);
 	}
 
 	updateMovableRoad();
@@ -517,7 +517,7 @@ void BaseStage::init() {
 	constexpr UINT barTexNum = redTexNum + 1;
 	Sprite::commonLoadTexture(spriteCommon,
 							  barTexNum,
-							  L"Resources/redBar.png",
+							  L"Resources/timeBar.png",
 							  DirectXCommon::getInstance()->getDev());
 
 	timeBarSprite.reset(new Sprite());
@@ -534,6 +534,19 @@ void BaseStage::init() {
 
 	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
 #pragma endregion 時間表す棒
+
+#pragma region ビネッタ
+	constexpr UINT vignTexNum = barTexNum + 1;
+	Sprite::commonLoadTexture(spriteCommon, vignTexNum,
+							  L"Resources/vign.png", dxCom->getDev());
+	vign.reset(new Sprite());
+	vign->create(dxCom->getDev(), WinAPI::window_width, WinAPI::window_height,
+				 vignTexNum, spriteCommon, { 0, 0 });
+	vign->size.x = WinAPI::window_width;
+	vign->size.y = WinAPI::window_height;
+	vign->SpriteTransferVertexBuffer(spriteCommon);
+
+#pragma endregion ビネッタ
 
 #pragma endregion スプライト
 
@@ -560,6 +573,7 @@ void BaseStage::init() {
 	backObj.reset(new Object3d(dxCom->getDev(), backModel.get(), 0));
 	constexpr float backScale = 10.f;
 	backObj->scale = XMFLOAT3(backScale, backScale, backScale);
+	backObj->rotation.x = 90.f;
 
 	model.reset(new Model(DirectXCommon::getInstance()->getDev(),
 						  boxModelPath.c_str(), boxModelTexPath_wall.c_str(),
@@ -736,18 +750,31 @@ void BaseStage::update() {
 #pragma region 情報表示
 
 	constexpr XMFLOAT4 dbFontCol = XMFLOAT4(1, 1, 1, 1);
+	constexpr XMFLOAT4 shadowCol = XMFLOAT4(0, 0, 0, 1);
 
+	debugText.formatPrint(spriteCommon, 1, 1, 1, shadowCol, "Stage %u", stageNum);
 	debugText.formatPrint(spriteCommon, 0, 0, 1, dbFontCol, "Stage %u", stageNum);
-	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT", 0, debugText.fontHeight);
 
+	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
+					1, debugText.fontHeight + 1,
+					1.f, shadowCol);
+	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
+					0, debugText.fontHeight);
+
+	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 2 + 1, 1,
+						  shadowCol,
+						  "%u combo", combo);
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 2, 1,
 						  dbFontCol,
-						  "%u combo",
-						  combo);
+						  "%u combo", combo);
 
 	const auto timeLimit = clearCount - beatChangeNum;
 	const float raito = (float)timeLimit / clearCount;
 
+	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 3 + 1, 1,
+						  shadowCol,
+						  "%u / %u",
+						  clearCount - beatChangeNum, clearCount);
 	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1,
 						  XMFLOAT4(1, raito, raito, 1),
 						  "%u / %u",
@@ -758,10 +785,15 @@ void BaseStage::update() {
 	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
 
 	debugText.Print(spriteCommon, "TIME",
+					timeBarSprite->position.x - debugText.fontWidth * 2.f + 1,
+					timeBarSprite->position.y + 1,
+					1.f,
+					shadowCol);
+	debugText.Print(spriteCommon, "TIME",
 					timeBarSprite->position.x - debugText.fontWidth * 2.f,
 					timeBarSprite->position.y,
 					1.f,
-					XMFLOAT4(1, 1, 0, 1));
+					dbFontCol);
 
 
 #pragma endregion 情報表示
@@ -822,8 +854,10 @@ void BaseStage::drawSprite() {
 	red->drawWithUpdate(dxCom, spriteCommon);
 	timeBarSprite->drawWithUpdate(dxCom, spriteCommon);
 	// スプライト描画
-	additionalDrawSprite();
+	additionalDrawBackSprite();
 
+	additionalDrawFrontprite();
 	// デバッグテキスト描画
 	debugText.DrawAll(dxCom, spriteCommon);
+	vign->drawWithUpdate(dxCom, spriteCommon);
 }

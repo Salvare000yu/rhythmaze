@@ -53,9 +53,3 @@ void PlayScene::spriteInit() {
 						  false, false);
 	}
 }
-
-void PlayScene::additionalDrawSprite() {
-	/*for (auto& i: sprites) {
-		i.drawWithUpdate(dxCom, spriteCommon);
-	}*/
-}
