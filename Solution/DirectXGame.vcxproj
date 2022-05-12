@@ -164,6 +164,12 @@
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="Stage10.cpp" />
+    <ClCompile Include="Stage11.cpp" />
+    <ClCompile Include="Stage12.cpp" />
+    <ClCompile Include="Stage13.cpp" />
+    <ClCompile Include="Stage14.cpp" />
+    <ClCompile Include="Stage15.cpp" />
     <ClCompile Include="Stage2.cpp" />
     <ClCompile Include="Stage3.cpp" />
     <ClCompile Include="Stage4.cpp" />
@@ -205,6 +211,12 @@
     <ClInclude Include="Sound.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="Stage10.h" />
+    <ClInclude Include="Stage11.h" />
+    <ClInclude Include="Stage12.h" />
+    <ClInclude Include="Stage13.h" />
+    <ClInclude Include="Stage14.h" />
+    <ClInclude Include="Stage15.h" />
     <ClInclude Include="Stage2.h" />
     <ClInclude Include="Stage3.h" />
     <ClInclude Include="Stage4.h" />
