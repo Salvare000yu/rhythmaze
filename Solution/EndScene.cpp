@@ -19,21 +19,23 @@ void EndScene::init() {
 						 WinAPI::window_width, WinAPI::window_height,
 						 debugTextTexNumber, spCom);
 
-	const bool cleared = SceneManager::getInstange()->getAchieving();
+	const bool cleared = SceneManager::getInstance()->getAchieving();
 
 	std::wstring backSpritePath;
 
 	if (cleared) {
 		snprintf(clearinfiStr, _countof(clearinfiStr),
-				 "clear combo : %u\nclear count : %u",
-				 SceneManager::getInstange()->getClearCombo(),
-				 SceneManager::getInstange()->getClearHalfBeat());
+				 "stage %u\nclear combo : %u\nclear count : %u",
+				 SceneManager::getInstance()->getStageNum(),
+				 SceneManager::getInstance()->getClearCombo(),
+				 SceneManager::getInstance()->getClearHalfBeat());
 		backSpritePath = L"Resources/backSprite/clear.png";
 	} else {
 		snprintf(clearinfiStr, _countof(clearinfiStr),
-				 "failed!\ncount : %u\ncombo : %u",
-				 SceneManager::getInstange()->getClearHalfBeat(),
-				 SceneManager::getInstange()->getClearCombo());
+				 "stage %u\ncount : %u\ncombo : %u",
+				 SceneManager::getInstance()->getStageNum(),
+				 SceneManager::getInstance()->getClearHalfBeat(),
+				 SceneManager::getInstance()->getClearCombo());
 		backSpritePath = L"Resources/backSprite/failed.png";
 	}
 
@@ -57,7 +59,7 @@ void EndScene::init() {
 
 void EndScene::update() {
 	if (input->triggerKey(DIK_SPACE)) {
-		SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
+		SceneManager::getInstance()->changeScene(SCENE_NUM::SELECT);
 	}
 
 	debugText.Print(spCom, "SPACE : back Stage select", 0, WinAPI::window_height / 2.f);

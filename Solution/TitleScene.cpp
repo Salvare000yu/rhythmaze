@@ -117,7 +117,7 @@ void TitleScene::update() {
 			if (raito >= 1.f && !Sound::checkPlaySound(sceneChangeSe.get())) {
 				// 指定時間以上かつSEが再生終了していたならシーン遷移
 				endEaseFlag = false;
-				SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
+				SceneManager::getInstance()->changeScene(SCENE_NUM::SELECT);
 			} else {
 				// 指定時間未満ならイージング処理
 				const auto easeRaito = pow(raito, 3);

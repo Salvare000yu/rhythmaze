@@ -13,11 +13,11 @@
 
 
 Looper::Looper() {
-	SceneManager::getInstange()->init();
+	SceneManager::getInstance()->init();
 }
 
 Looper::~Looper() {
-	SceneManager::getInstange()->fin();
+	SceneManager::getInstance()->fin();
 }
 
 Looper* Looper::getInstance() {
@@ -36,7 +36,7 @@ bool Looper::loop() {
 	// --------------------
 	// シーンマネージャーの更新
 	// --------------------
-	SceneManager::getInstange()->update();
+	SceneManager::getInstance()->update();
 
 	// --------------------
 	// シーンマネージャーの描画
@@ -44,7 +44,7 @@ bool Looper::loop() {
 	constexpr DirectX::XMFLOAT3 clearColor = { 34.f / 255, 32.f / 255, 52.f / 255 };	//青っぽい色
 	DirectXCommon::getInstance()->startDraw(clearColor);
 
-	SceneManager::getInstange()->draw();
+	SceneManager::getInstance()->draw();
 
 	DirectXCommon::getInstance()->endDraw();
 

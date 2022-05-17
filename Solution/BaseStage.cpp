@@ -140,12 +140,12 @@ void BaseStage::updateCamera() {
 
 bool BaseStage::goal() {
 	// コンボ数がクリア条件に達していたら
-	SceneManager::getInstange()->goal(beatChangeNum, combo, true);
+	SceneManager::getInstance()->goal(stageNum, beatChangeNum, combo, true);
 	return true;
 }
 
 void BaseStage::timeOut() {
-	SceneManager::getInstange()->goal(beatChangeNum, combo, false);
+	SceneManager::getInstance()->goal(stageNum, beatChangeNum, combo, false);
 }
 
 void BaseStage::updatePlayerPos() {
@@ -532,7 +532,7 @@ void BaseStage::init() {
 	timeBarSprite->size.x = timeBarWid;
 
 	timeBarSprite->position.x = WinAPI::window_width / 2.f;
-	timeBarSprite->position.y = timeBarSprite->size.y / 2.f;
+	timeBarSprite->position.y = timeBarSprite->size.y / 2.f + debugText.fontHeight;
 
 
 	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
@@ -724,7 +724,7 @@ void BaseStage::init() {
 
 void BaseStage::update() {
 	// ステージ選択画面に戻る操作
-	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
+	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) SceneManager::getInstance()->changeScene(SCENE_NUM::SELECT);
 
 	// 天球回転
 	backObj->rotation.y += 0.1f;
@@ -759,26 +759,26 @@ void BaseStage::update() {
 	debugText.formatPrint(spriteCommon, 0, 0, 1, dbFontCol, "Stage %u", stageNum);
 
 	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
-					1, debugText.fontHeight + 1,
+					1, debugText.fontHeight * 3 + 1,
 					1.f, shadowCol);
 	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
-					0, debugText.fontHeight);
+					0, debugText.fontHeight * 3);
 
-	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 2 + 1, 1,
+	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 5 + 1, 1,
 						  shadowCol,
 						  "%u combo", combo);
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 2, 1,
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 5, 1,
 						  dbFontCol,
 						  "%u combo", combo);
 
 	const auto timeLimit = clearCount - beatChangeNum;
 	const float raito = (float)timeLimit / clearCount;
 
-	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 3 + 1, 1,
+	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 6 + 1, 1,
 						  shadowCol,
 						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1,
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 6, 1,
 						  XMFLOAT4(1, raito, raito, 1),
 						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
@@ -789,12 +789,12 @@ void BaseStage::update() {
 
 	debugText.Print(spriteCommon, "TIME",
 					timeBarSprite->position.x - debugText.fontWidth * 2.f + 1,
-					timeBarSprite->position.y + 1,
+					timeBarSprite->position.y - debugText.fontHeight + 1,
 					1.f,
 					shadowCol);
 	debugText.Print(spriteCommon, "TIME",
 					timeBarSprite->position.x - debugText.fontWidth * 2.f,
-					timeBarSprite->position.y,
+					timeBarSprite->position.y - debugText.fontHeight,
 					1.f,
 					dbFontCol);
 
