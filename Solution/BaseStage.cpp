@@ -590,7 +590,7 @@ void BaseStage::init() {
 							  goalModelPath.c_str(), goalModelTexPath.c_str(),
 							  WinAPI::window_width, WinAPI::window_height,
 							  Object3d::constantBufferNum, goalTexNum));
-	constexpr XMFLOAT3 goalObjScale = XMFLOAT3(4, 4, 4);
+	constexpr XMFLOAT3 goalObjScale = XMFLOAT3(2.5, 2.5, 2.5);
 	constexpr XMFLOAT3 goalObjRotation = XMFLOAT3(0, 90, 90);
 
 #pragma endregion ƒ}ƒbƒv
