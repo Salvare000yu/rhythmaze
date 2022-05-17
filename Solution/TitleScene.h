@@ -23,6 +23,7 @@ class TitleScene :
 	const UINT debugTextTexNumber = Sprite::spriteSRVCount - 1;
 
 	std::unique_ptr<Sprite> titleSprite;
+	std::unique_ptr<Sprite> titleBackSprite;
 
 	Input* input = nullptr;
 
