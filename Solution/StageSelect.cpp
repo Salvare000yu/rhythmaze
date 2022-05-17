@@ -354,11 +354,13 @@ void StageSelect::draw() {
 	Sprite::drawStart(spCom, DirectXCommon::getInstance()->getCmdList());
 	// 背景
 	back->drawWithUpdate(DirectXCommon::getInstance(), spCom);
-	// スプライト描画
-	cursor->drawWithUpdate(DirectXCommon::getInstance(), spCom);
+
+	// 選択中ではないステージ描画
 	for (UINT i = 0, size = stage.size(); i < size; ++i) {
-		stageBack[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
-		stage[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
+		if (i != nowSelect) {
+			stageBack[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
+			stage[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
+		}
 	}
 	arrowStr->drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	for (auto& i : arrow) {
@@ -369,6 +371,10 @@ void StageSelect::draw() {
 	for (auto& i : shiftAndArrow) {
 		i.drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	}
+	// 選択中のステージ描画
+	cursor->drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	stageBack[nowSelect].drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	stage[nowSelect].drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	// デバッグテキスト描画
 	debugText.DrawAll(DirectXCommon::getInstance(), spCom);
 }

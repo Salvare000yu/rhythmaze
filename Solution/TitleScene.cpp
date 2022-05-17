@@ -31,17 +31,28 @@ void TitleScene::init() {
 
 	constexpr UINT titleSpriteNum = 0;
 	Sprite::commonLoadTexture(spCom, titleSpriteNum, L"Resources/backSprite/titlemoji.png", DirectXCommon::getInstance()->getDev());
-	constexpr UINT titleBackSpriteNum = 1;
+
+	constexpr UINT titleBackSpriteNum = titleSpriteNum + 1;
 	Sprite::commonLoadTexture(spCom, titleBackSpriteNum, L"Resources/backSprite/titlehaikei.png", DirectXCommon::getInstance()->getDev());
+
+	constexpr UINT pressSpaceSpriteNum = titleBackSpriteNum + 1;
+	Sprite::commonLoadTexture(spCom, pressSpaceSpriteNum, L"Resources/backSprite/titlePressSpace.png", DirectXCommon::getInstance()->getDev());
 
 	titleSprite.reset(new Sprite());
 	titleSprite->create(DirectXCommon::getInstance()->getDev(),
 						WinAPI::window_width, WinAPI::window_height,
 						titleSpriteNum, spCom, DirectX::XMFLOAT2(0, 0), false, false);
+	
 	titleBackSprite.reset(new Sprite());
 	titleBackSprite->create(DirectXCommon::getInstance()->getDev(),
-		WinAPI::window_width, WinAPI::window_height,
-		titleBackSpriteNum, spCom, DirectX::XMFLOAT2(0, 0), false, false);
+							WinAPI::window_width, WinAPI::window_height,
+							titleBackSpriteNum, spCom, DirectX::XMFLOAT2(0, 0), false, false);
+
+	pressSpace.reset(new Sprite());
+	pressSpace->create(DirectXCommon::getInstance()->getDev(),
+							WinAPI::window_width, WinAPI::window_height,
+					   pressSpaceSpriteNum, spCom, DirectX::XMFLOAT2(0, 0), false, false);
+	pressSpace->isInvisible = true;
 
 	// デバッグテキスト用のテクスチャ読み込み
 	Sprite::commonLoadTexture(spCom, debugTextTexNumber, L"Resources/debugfont.png", DirectXCommon::getInstance()->getDev());
@@ -82,6 +93,8 @@ void TitleScene::update() {
 			// 指定時間を超えていたらイージング終了
 			startEaseFlag = false;
 			titleSprite->position.y = 0;
+			pressSpace->isInvisible = false;
+			easeTimer->reset();
 		} else {
 			// 指定時間が経過していなければイージング処理
 
@@ -119,6 +132,7 @@ void TitleScene::update() {
 			// スペースを押したら終了時イージングを開始する
 			if (input->triggerKey(DIK_SPACE)) {
 				endEaseFlag = true;
+				pressSpace->isInvisible = true;
 				// BGMを止める
 				Sound::SoundStopWave(bgm.get());
 				// ここで効果音を流す
@@ -126,6 +140,11 @@ void TitleScene::update() {
 				Sound::SoundPlayWave(soundCom.get(), sceneChangeSe.get(), sceneChangeSeVolume);
 				// イージング用タイマー初期化
 				easeTimer->reset();
+			} else {
+				const auto raito = sinf((float)easeTimer->getNowTime() / Time::oneSec * 2.f);
+				const auto easePos = raito * WinAPI::window_height / 32.f;
+				titleSprite->position.y = easePos;
+				titleSprite->SpriteTransferVertexBuffer(spCom);
 			}
 		}
 	}
@@ -135,5 +154,6 @@ void TitleScene::draw() {
 	Sprite::drawStart(spCom, DirectXCommon::getInstance()->getCmdList());
 	titleBackSprite->drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	titleSprite->drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	pressSpace->drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	debugText.DrawAll(DirectXCommon::getInstance(), spCom);
 }
