@@ -205,8 +205,8 @@ void StageSelect::update() {
 	if (input->triggerKey(DIK_R)) {
 		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
 	} else if (!sceneChangeFlag) {
-		const auto inputR = input->triggerKey(DIK_RIGHT) || input->triggerKey(DIK_D);
-		const auto inputL = input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_A);
+		const auto inputR = input->hitKey(DIK_RIGHT) || input->hitKey(DIK_D);
+		const auto inputL = input->hitKey(DIK_LEFT) || input->hitKey(DIK_A);
 		const auto inputShift = input->hitKey(DIK_LSHIFT) || input->hitKey(DIK_RSHIFT);
 
 		if (inputR || inputL || inputShift) {

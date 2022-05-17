@@ -38,7 +38,7 @@ void Stage2::additionalInit() {
 
 	bgmBolume = 0.4f;
 
-	clearCount = 250u;
+	clearCount = 60u;
 
 	spriteInit();
 }
