@@ -85,7 +85,7 @@ void BaseStage::updateMovableRoad() {
 	else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;
 }
 
-void BaseStage::changeBeatProc(const Time::timeType& nowTime) {
+void BaseStage::changeBeatProc(const Time::timeType &nowTime) {
 	beatChangeNum++;
 	beatChangeTime = nowTime;	// 今の時間を記録
 	frontBeatFlag = !frontBeatFlag;	// 表迫と裏拍をchange
@@ -111,8 +111,8 @@ void BaseStage::updateLightPosition() {
 
 	playerObj->setLightPos(light);
 
-	for (auto& y : mapObj) {
-		for (auto& x : y) {
+	for (auto &y : mapObj) {
+		for (auto &x : y) {
 			x.setLightPos(light);
 		}
 	}
@@ -264,6 +264,9 @@ void BaseStage::updatePlayerPos() {
 			combo = 0U;	// コンボをリセット
 			missFlag = false;
 
+			beatChangeNum++;
+			missNum++;
+
 			red->isInvisible = false;
 			redTimer->reset();
 		}
@@ -306,7 +309,7 @@ void BaseStage::updateTime() {
 	constexpr float aheadJudgeRange = 0.25f;	// この値分次の拍の始まりが速くなる[0~1]
 
 	// 拍が変わったら
-	if (nowTime >= oneBeatTime * ((float)beatChangeNum + 1u) - oneBeatTime * aheadJudgeRange) {
+	if (nowTime >= oneBeatTime * (float)(beatChangeNum - missNum + 1u) - oneBeatTime * aheadJudgeRange) {
 		changeBeatProc(nowTime);
 	}
 
@@ -375,7 +378,7 @@ void BaseStage::startParticle(const DirectX::XMFLOAT3 pos) {
 
 
 
-std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string& csvFilePath) {
+std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string &csvFilePath) {
 	std::vector<std::vector<std::string>> csvData{};	// csvの中身を格納
 
 	std::ifstream ifs(csvFilePath);
@@ -399,7 +402,7 @@ std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string& csvF
 	return csvData;
 }
 
-void BaseStage::loadMapFile(const std::string& csvFilePath, DirectX::XMFLOAT2* startPosition) {
+void BaseStage::loadMapFile(const std::string &csvFilePath, DirectX::XMFLOAT2 *startPosition) {
 	const auto mapFileData = loadCsv(csvFilePath);
 
 	bool findStartPosFlag = false;
@@ -641,7 +644,7 @@ void BaseStage::init() {
 				// todo 此処でゴールのオブジェクトの座標を設定する
 				goalObj.emplace_back(Object3d(dxCom->getDev(), goalModel.get(), goalTexNum));
 				{
-					auto& lastGoal = goalObj.back();
+					auto &lastGoal = goalObj.back();
 					lastGoal.position = mapObj[y][x].position;
 					lastGoal.position.y += obj3dScale;
 					lastGoal.scale = goalObjScale;
@@ -818,8 +821,8 @@ void BaseStage::drawObj3d() {
 	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), object3dPipelineSet);
 
 	// 壁描画
-	for (auto& y : mapObj) {
-		for (auto& x : y) {
+	for (auto &y : mapObj) {
+		for (auto &x : y) {
 			x.drawWithUpdate(camera->getViewMatrix(), dxCom);
 		}
 	}
@@ -828,7 +831,7 @@ void BaseStage::drawObj3d() {
 	playerObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 
 	// ゴールモデル描画
-	for (auto& i : goalObj) {
+	for (auto &i : goalObj) {
 		i.drawWithUpdate(camera->getViewMatrix(), dxCom);
 	}
 
