@@ -24,6 +24,63 @@ namespace {
 	inline XMFLOAT2 operator*(const XMFLOAT2 left, const XMFLOAT2 right) {
 		return XMFLOAT2(left.x * right.x, left.y * right.y);
 	}
+
+	void changeSelect(const UINT &nowSelect, SCENE_NUM &SELECT) {
+		// undone シーンを追加する際は此処の分岐も増やす
+		switch (nowSelect) {
+		case 0:
+			SELECT = SCENE_NUM::EXPLANATION;
+			break;
+		case 1:
+			SELECT = SCENE_NUM::STAGE1;
+			break;
+		case 2:
+			SELECT = SCENE_NUM::STAGE2;
+			break;
+		case 3:
+			SELECT = SCENE_NUM::STAGE3;
+			break;
+		case 4:
+			SELECT = SCENE_NUM::STAGE4;
+			break;
+		case 5:
+			SELECT = SCENE_NUM::STAGE5;
+			break;
+		case 6:
+			SELECT = SCENE_NUM::STAGE6;
+			break;
+		case 7:
+			SELECT = SCENE_NUM::STAGE7;
+			break;
+		case 8:
+			SELECT = SCENE_NUM::STAGE8;
+			break;
+		case 9:
+			SELECT = SCENE_NUM::STAGE9;
+			break;
+		case 10:
+			SELECT = SCENE_NUM::STAGE10;
+			break;
+		case 11:
+			SELECT = SCENE_NUM::STAGE11;
+			break;
+		case 12:
+			SELECT = SCENE_NUM::STAGE12;
+			break;
+		case 13:
+			SELECT = SCENE_NUM::STAGE13;
+			break;
+		case 14:
+			SELECT = SCENE_NUM::STAGE14;
+			break;
+		case 15:
+			SELECT = SCENE_NUM::STAGE15;
+			break;
+		default:
+			SELECT = SCENE_NUM::EXPLANATION;
+			break;
+		}
+	}
 }
 
 void StageSelect::init() {
@@ -203,6 +260,9 @@ void StageSelect::init() {
 
 	soundCom.reset(new Sound::SoundCommon());
 	sceneChangeSe.reset(new Sound("Resources/SE/Shortbridge29-1.wav", soundCom.get()));
+
+	// SELECTの値をセットする
+	changeSelect(nowSelect, SELECT);
 }
 
 void StageSelect::update() {
@@ -260,60 +320,7 @@ void StageSelect::update() {
 				stageBack[nowSelect].size = selectScale * stageBack[nowSelect].texSize;
 				stageBack[nowSelect].SpriteTransferVertexBuffer(spCom);
 
-				// undone シーンを追加する際は此処の分岐も増やす
-				switch (nowSelect) {
-				case 0:
-					SELECT = SCENE_NUM::EXPLANATION;
-					break;
-				case 1:
-					SELECT = SCENE_NUM::STAGE1;
-					break;
-				case 2:
-					SELECT = SCENE_NUM::STAGE2;
-					break;
-				case 3:
-					SELECT = SCENE_NUM::STAGE3;
-					break;
-				case 4:
-					SELECT = SCENE_NUM::STAGE4;
-					break;
-				case 5:
-					SELECT = SCENE_NUM::STAGE5;
-					break;
-				case 6:
-					SELECT = SCENE_NUM::STAGE6;
-					break;
-				case 7:
-					SELECT = SCENE_NUM::STAGE7;
-					break;
-				case 8:
-					SELECT = SCENE_NUM::STAGE8;
-					break;
-				case 9:
-					SELECT = SCENE_NUM::STAGE9;
-					break;
-				case 10:
-					SELECT = SCENE_NUM::STAGE10;
-					break;
-				case 11:
-					SELECT = SCENE_NUM::STAGE11;
-					break;
-				case 12:
-					SELECT = SCENE_NUM::STAGE12;
-					break;
-				case 13:
-					SELECT = SCENE_NUM::STAGE13;
-					break;
-				case 14:
-					SELECT = SCENE_NUM::STAGE14;
-					break;
-				case 15:
-					SELECT = SCENE_NUM::STAGE15;
-					break;
-				default:
-					SELECT = SCENE_NUM::EXPLANATION;
-					break;
-				}
+				changeSelect(nowSelect, SELECT);
 			}
 		} else {
 			// スペースを押したら選んだシーンに移動
@@ -351,6 +358,8 @@ void StageSelect::update() {
 			cursor->SpriteTransferVertexBuffer(spCom);
 		}
 	}
+
+	debugText.formatPrint(spCom, 0, 0, 1.f, { 1,1,1,1 }, "%u <- nowSelect", nowSelect);
 }
 
 void StageSelect::draw() {

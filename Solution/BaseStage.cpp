@@ -724,7 +724,10 @@ void BaseStage::init() {
 
 void BaseStage::update() {
 	// ステージ選択画面に戻る操作
-	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) SceneManager::getInstance()->changeScene(SCENE_NUM::SELECT);
+	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) {
+		SceneManager::getInstance()->setStageNum(stageNum);
+		SceneManager::getInstance()->changeScene(SCENE_NUM::SELECT);
+	}
 
 	// 天球回転
 	backObj->rotation.y += 0.1f;
