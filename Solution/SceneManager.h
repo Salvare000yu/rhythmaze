@@ -43,6 +43,8 @@ public:
 
 	static SceneManager* getInstance();
 
+	void setStageNum(unsigned stageNum) { this->stageNum = stageNum; }
+
 	void init() override;
 	void update() override;
 	void draw() override;
