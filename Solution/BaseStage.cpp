@@ -85,7 +85,7 @@ void BaseStage::updateMovableRoad() {
 	else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;
 }
 
-void BaseStage::changeBeatProc(const Time::timeType& nowTime) {
+void BaseStage::changeBeatProc(const Time::timeType &nowTime) {
 	beatChangeNum++;
 	beatChangeTime = nowTime;	// 今の時間を記録
 	frontBeatFlag = !frontBeatFlag;	// 表迫と裏拍をchange
@@ -111,8 +111,8 @@ void BaseStage::updateLightPosition() {
 
 	playerObj->setLightPos(light);
 
-	for (auto& y : mapObj) {
-		for (auto& x : y) {
+	for (auto &y : mapObj) {
+		for (auto &x : y) {
 			x.setLightPos(light);
 		}
 	}
@@ -140,12 +140,12 @@ void BaseStage::updateCamera() {
 
 bool BaseStage::goal() {
 	// コンボ数がクリア条件に達していたら
-	SceneManager::getInstange()->goal(beatChangeNum, combo, true);
+	SceneManager::getInstance()->goal(stageNum, beatChangeNum, combo, true);
 	return true;
 }
 
 void BaseStage::timeOut() {
-	SceneManager::getInstange()->goal(beatChangeNum, combo, false);
+	SceneManager::getInstance()->goal(stageNum, beatChangeNum, combo, false);
 }
 
 void BaseStage::updatePlayerPos() {
@@ -264,6 +264,9 @@ void BaseStage::updatePlayerPos() {
 			combo = 0U;	// コンボをリセット
 			missFlag = false;
 
+			beatChangeNum++;
+			missNum++;
+
 			red->isInvisible = false;
 			redTimer->reset();
 		}
@@ -306,7 +309,7 @@ void BaseStage::updateTime() {
 	constexpr float aheadJudgeRange = 0.25f;	// この値分次の拍の始まりが速くなる[0~1]
 
 	// 拍が変わったら
-	if (nowTime >= oneBeatTime * ((float)beatChangeNum + 1u) - oneBeatTime * aheadJudgeRange) {
+	if (nowTime >= oneBeatTime * (float)(beatChangeNum - missNum + 1u) - oneBeatTime * aheadJudgeRange) {
 		changeBeatProc(nowTime);
 	}
 
@@ -375,7 +378,7 @@ void BaseStage::startParticle(const DirectX::XMFLOAT3 pos) {
 
 
 
-std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string& csvFilePath) {
+std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string &csvFilePath) {
 	std::vector<std::vector<std::string>> csvData{};	// csvの中身を格納
 
 	std::ifstream ifs(csvFilePath);
@@ -399,7 +402,7 @@ std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string& csvF
 	return csvData;
 }
 
-void BaseStage::loadMapFile(const std::string& csvFilePath, DirectX::XMFLOAT2* startPosition) {
+void BaseStage::loadMapFile(const std::string &csvFilePath, DirectX::XMFLOAT2 *startPosition) {
 	const auto mapFileData = loadCsv(csvFilePath);
 
 	bool findStartPosFlag = false;
@@ -529,7 +532,7 @@ void BaseStage::init() {
 	timeBarSprite->size.x = timeBarWid;
 
 	timeBarSprite->position.x = WinAPI::window_width / 2.f;
-	timeBarSprite->position.y = timeBarSprite->size.y / 2.f;
+	timeBarSprite->position.y = timeBarSprite->size.y / 2.f + debugText.fontHeight;
 
 
 	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
@@ -641,7 +644,7 @@ void BaseStage::init() {
 				// todo 此処でゴールのオブジェクトの座標を設定する
 				goalObj.emplace_back(Object3d(dxCom->getDev(), goalModel.get(), goalTexNum));
 				{
-					auto& lastGoal = goalObj.back();
+					auto &lastGoal = goalObj.back();
 					lastGoal.position = mapObj[y][x].position;
 					lastGoal.position.y += obj3dScale;
 					lastGoal.scale = goalObjScale;
@@ -721,7 +724,7 @@ void BaseStage::init() {
 
 void BaseStage::update() {
 	// ステージ選択画面に戻る操作
-	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
+	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) SceneManager::getInstance()->changeScene(SCENE_NUM::SELECT);
 
 	// 天球回転
 	backObj->rotation.y += 0.1f;
@@ -756,26 +759,26 @@ void BaseStage::update() {
 	debugText.formatPrint(spriteCommon, 0, 0, 1, dbFontCol, "Stage %u", stageNum);
 
 	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
-					1, debugText.fontHeight + 1,
+					1, debugText.fontHeight * 3 + 1,
 					1.f, shadowCol);
 	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
-					0, debugText.fontHeight);
+					0, debugText.fontHeight * 3);
 
-	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 2 + 1, 1,
+	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 5 + 1, 1,
 						  shadowCol,
 						  "%u combo", combo);
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 2, 1,
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 5, 1,
 						  dbFontCol,
 						  "%u combo", combo);
 
 	const auto timeLimit = clearCount - beatChangeNum;
 	const float raito = (float)timeLimit / clearCount;
 
-	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 3 + 1, 1,
+	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 6 + 1, 1,
 						  shadowCol,
 						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1,
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 6, 1,
 						  XMFLOAT4(1, raito, raito, 1),
 						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
@@ -786,12 +789,12 @@ void BaseStage::update() {
 
 	debugText.Print(spriteCommon, "TIME",
 					timeBarSprite->position.x - debugText.fontWidth * 2.f + 1,
-					timeBarSprite->position.y + 1,
+					timeBarSprite->position.y - debugText.fontHeight + 1,
 					1.f,
 					shadowCol);
 	debugText.Print(spriteCommon, "TIME",
 					timeBarSprite->position.x - debugText.fontWidth * 2.f,
-					timeBarSprite->position.y,
+					timeBarSprite->position.y - debugText.fontHeight,
 					1.f,
 					dbFontCol);
 
@@ -818,8 +821,8 @@ void BaseStage::drawObj3d() {
 	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), object3dPipelineSet);
 
 	// 壁描画
-	for (auto& y : mapObj) {
-		for (auto& x : y) {
+	for (auto &y : mapObj) {
+		for (auto &x : y) {
 			x.drawWithUpdate(camera->getViewMatrix(), dxCom);
 		}
 	}
@@ -828,7 +831,7 @@ void BaseStage::drawObj3d() {
 	playerObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 
 	// ゴールモデル描画
-	for (auto& i : goalObj) {
+	for (auto &i : goalObj) {
 		i.drawWithUpdate(camera->getViewMatrix(), dxCom);
 	}
 

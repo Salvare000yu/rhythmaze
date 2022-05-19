@@ -107,7 +107,8 @@ protected:
 
 #pragma region ˆÚ“®ŠÖ˜Aî•ñ
 
-	unsigned beatChangeNum = 0;
+	unsigned beatChangeNum = 0u;
+	unsigned missNum = 0u;
 
 	Time::timeType beatChangeTime = 0;
 

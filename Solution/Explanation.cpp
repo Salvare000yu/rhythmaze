@@ -32,7 +32,7 @@ void Explanation::init() {
 
 void Explanation::update() {
 	if (input->triggerKey(DIK_SPACE)) {
-		SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
+		SceneManager::getInstance()->changeScene(SCENE_NUM::SELECT);
 	}
 	/*debugText.Print(spCom, "EXPLANATION", 0, 0, 5.f);
 	debugText.Print(spCom,

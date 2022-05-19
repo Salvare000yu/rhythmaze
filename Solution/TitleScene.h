@@ -24,6 +24,7 @@ class TitleScene :
 
 	std::unique_ptr<Sprite> titleSprite;
 	std::unique_ptr<Sprite> titleBackSprite;
+	std::unique_ptr<Sprite> pressSpace;
 
 	Input* input = nullptr;
 
