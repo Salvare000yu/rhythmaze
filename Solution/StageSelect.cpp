@@ -358,8 +358,6 @@ void StageSelect::update() {
 			cursor->SpriteTransferVertexBuffer(spCom);
 		}
 	}
-
-	debugText.formatPrint(spCom, 0, 0, 1.f, { 1,1,1,1 }, "%u <- nowSelect", nowSelect);
 }
 
 void StageSelect::draw() {

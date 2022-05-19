@@ -207,7 +207,7 @@ protected:
 	std::wstring backModelTexPath = L"Resources/model/back/back_tex.png";
 
 	std::wstring goalModelPath = L"Resources/model/goal/goal.obj";
-	std::wstring goalModelTexPath = L"Resources/model/player/nanohanairo.png";
+	std::wstring goalModelTexPath = L"Resources/model/goal/lightBlue.png";
 
 #pragma endregion ファイルパス
 
