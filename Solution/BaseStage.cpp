@@ -266,6 +266,7 @@ void BaseStage::updatePlayerPos() {
 
 			red->isInvisible = false;
 			redTimer->reset();
+			beatChangeNum += 1;
 		}
 
 		if (goalFlag) goal();
