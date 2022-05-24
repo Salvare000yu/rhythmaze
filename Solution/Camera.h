@@ -73,7 +73,7 @@ public:
 	inline const XMFLOAT3& getEye() { return eye; }
 
 	// 視点座標の設定
-	inline void setEye(XMFLOAT3 eye) { this->eye = eye; viewDirty = true; }
+	inline void setEye(const XMFLOAT3& eye) { this->eye = eye; viewDirty = true; }
 
 	// 注視点座標の取得
 	inline const XMFLOAT3& getTarget() { return target; }
@@ -84,7 +84,7 @@ public:
 	// 上方向ベクトルの取得
 	inline const XMFLOAT3& getUp() { return up; }
 	// 上方向ベクトルの設定
-	inline void setUp(XMFLOAT3 up) { this->up = up; viewDirty = true; }
+	inline void setUp(const XMFLOAT3& up) { this->up = up; viewDirty = true; }
 
 	inline void setNearZ(const float nearZ) { this->nearZ = nearZ; projectionDirty = true; }
 	inline void setFarZ(const float farZ) { this->farZ = farZ; projectionDirty = true; }

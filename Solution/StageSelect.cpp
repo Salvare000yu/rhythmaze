@@ -94,21 +94,21 @@ void StageSelect::init() {
 	// --------------------
 	spCom = Sprite::createSpriteCommon(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height);
 
-	constexpr auto stageNumTexNum = 0;
-	constexpr auto backSpriteNum = stageNumTexNum + 1;
-	constexpr auto leftArrowTexNum = backSpriteNum + 1;
-	constexpr auto arrowStrTexNum = leftArrowTexNum + 1;
-	constexpr auto returnTitleTexNum = arrowStrTexNum + 1;
-	constexpr auto space2SelectTexNum = returnTitleTexNum + 1;
-	constexpr auto moveFirstTexNum = space2SelectTexNum + 1;
-	constexpr auto moveLastTexNum = moveFirstTexNum + 1;
-	constexpr auto backTexNum = moveLastTexNum + 1;
-	constexpr auto cursorTexNum = backTexNum + 1;
+	constexpr UINT stageNumTexNum = 0u;
+	constexpr UINT backSpriteNum = stageNumTexNum + 1;
+	constexpr UINT leftArrowTexNum = backSpriteNum + 1;
+	constexpr UINT arrowStrTexNum = leftArrowTexNum + 1;
+	constexpr UINT returnTitleTexNum = arrowStrTexNum + 1;
+	constexpr UINT space2SelectTexNum = returnTitleTexNum + 1;
+	constexpr UINT moveFirstTexNum = space2SelectTexNum + 1;
+	constexpr UINT moveLastTexNum = moveFirstTexNum + 1;
+	constexpr UINT backTexNum = moveLastTexNum + 1;
+	constexpr UINT cursorTexNum = backTexNum + 1;
 	// --------------------
 	// スプライト共通テクスチャ読み込み
 	// --------------------
 	// 画像サイズ
-	const auto stageGraphSize = Sprite::commonLoadTexture(spCom, stageNumTexNum,
+	const XMFLOAT2 stageGraphSize = Sprite::commonLoadTexture(spCom, stageNumTexNum,
 														  L"Resources/StageSelect/stageNum.png",
 														  DirectXCommon::getInstance()->getDev());
 	Sprite::commonLoadTexture(spCom, backSpriteNum,
