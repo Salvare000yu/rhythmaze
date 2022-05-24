@@ -11,9 +11,15 @@ using namespace DirectX;
 
 namespace {
 	constexpr float wallColFL = 0.3f;
-	constexpr auto wallCol = XMFLOAT4(wallColFL, wallColFL, wallColFL, 1);
-	constexpr auto noRoadWallCol = wallCol;
-	constexpr auto roadWallCol = wallCol;
+	constexpr XMFLOAT4 wallCol = XMFLOAT4(wallColFL, wallColFL, wallColFL, 1);
+	constexpr XMFLOAT4 noRoadWallCol = wallCol;
+	constexpr XMFLOAT4 roadWallCol = wallCol;
+
+	XMFLOAT3 add(const XMFLOAT3 &l, const XMFLOAT3 &r) {
+		return XMFLOAT3(l.x + r.x,
+						l.y + r.y,
+						l.z + r.z);
+	}
 }
 
 // @return 今の位置
@@ -21,11 +27,11 @@ DirectX::XMFLOAT3 BaseStage::easePos(const DirectX::XMFLOAT3 startPos,
 									 const DirectX::XMFLOAT3 endPos,
 									 const float timeRaito,
 									 const int easeTime) {
-	const auto raitoCoe = 1.f - timeRaito;
-	const auto easeVal = raitoCoe * raitoCoe * raitoCoe * raitoCoe * raitoCoe;
-	const auto nowTime = easeVal * easeTime;
+	const float raitoCoe = 1.f - timeRaito;
+	const float easeVal = raitoCoe * raitoCoe * raitoCoe * raitoCoe * raitoCoe;
+	const float nowTime = easeVal * easeTime;
 
-	const auto moveVal = XMFLOAT3(
+	const XMFLOAT3 moveVal = XMFLOAT3(
 		endPos.x - startPos.x,
 		endPos.y - startPos.y,
 		endPos.z - startPos.z
@@ -42,9 +48,9 @@ void BaseStage::updateMovableRoad() {
 	// --------------------
 	// 進めない道を壁にする
 	// --------------------
-	constexpr auto defColor = XMFLOAT4(1, 1, 1, 1);
-	constexpr auto frontColor = XMFLOAT4(0, 1, 0, 1);
-	constexpr auto backColor = XMFLOAT4(1, 0.5f, 1, 1);
+	constexpr XMFLOAT4 defColor = XMFLOAT4(1, 1, 1, 1);
+	constexpr XMFLOAT4 frontColor = XMFLOAT4(0, 1, 0, 1);
+	constexpr XMFLOAT4 backColor = XMFLOAT4(1, 0.5f, 1, 1);
 	for (UINT y = 0, yLen = mapData.size(); y < yLen; y++) {
 		for (UINT x = 0, xLen = mapData[y].size(); x < xLen; x++) {
 			switch (mapData[y][x]) {
@@ -85,7 +91,7 @@ void BaseStage::updateMovableRoad() {
 	else mapObj[playerMapPos.y][playerMapPos.x].texNum = BOX_TEXNUM::BACK;
 }
 
-void BaseStage::changeBeatProc(const Time::timeType& nowTime) {
+void BaseStage::changeBeatProc(const Time::timeType &nowTime) {
 	beatChangeNum++;
 	beatChangeTime = nowTime;	// 今の時間を記録
 	frontBeatFlag = !frontBeatFlag;	// 表迫と裏拍をchange
@@ -111,8 +117,8 @@ void BaseStage::updateLightPosition() {
 
 	playerObj->setLightPos(light);
 
-	for (auto& y : mapObj) {
-		for (auto& x : y) {
+	for (auto &y : mapObj) {
+		for (auto &x : y) {
 			x.setLightPos(light);
 		}
 	}
@@ -131,7 +137,7 @@ void BaseStage::updateCamera() {
 	XMFLOAT3 camPos = camera->getEye();
 	camPos.x = playerObj->position.x;
 	camPos.z = playerObj->position.z;
-	camera->setEye(camPos);
+	camera->setEye(add(camPos, cameraPosShakeVal));
 	camera->setTarget(playerObj->position);
 	camera->setUp(XMFLOAT3(0, 0, 1));
 
@@ -140,12 +146,12 @@ void BaseStage::updateCamera() {
 
 bool BaseStage::goal() {
 	// コンボ数がクリア条件に達していたら
-	SceneManager::getInstange()->goal(beatChangeNum, combo, true);
+	SceneManager::getInstance()->goal(stageNum, beatChangeNum, combo, true);
 	return true;
 }
 
 void BaseStage::timeOut() {
-	SceneManager::getInstange()->goal(beatChangeNum, combo, false);
+	SceneManager::getInstance()->goal(stageNum, beatChangeNum, combo, false);
 }
 
 void BaseStage::updatePlayerPos() {
@@ -184,14 +190,14 @@ void BaseStage::updatePlayerPos() {
 			}
 
 			// 今移動可能な道の種類
-			auto nowMovableRoad = MAP_NUM::BACK_ROAD;
+			MAP_NUM nowMovableRoad = MAP_NUM::BACK_ROAD;
 			if (frontBeatFlag) {
 				nowMovableRoad = MAP_NUM::FRONT_ROAD;
 			}
 
 			// 移動後の種類を記録
 			MAP_NUM nextMapNum = MAP_NUM::UNDEF;	// 移動後のマップの種類格納用
-			auto nextPlayerMapPos = playerMapPos;	// 移動後のプレイヤーのマップ座標格納用
+			XMFLOAT2 nextPlayerMapPos = playerMapPos;	// 移動後のプレイヤーのマップ座標格納用
 
 			// 移動先のマップの種類を記録し、移動後のプレイヤーのマップ座標を記録
 			switch (moveDir) {
@@ -264,6 +270,11 @@ void BaseStage::updatePlayerPos() {
 			combo = 0U;	// コンボをリセット
 			missFlag = false;
 
+			beatChangeNum++;
+			missNum++;
+
+			cameraCenterPos = camera->getEye();
+
 			red->isInvisible = false;
 			redTimer->reset();
 			beatChangeNum += 1;
@@ -273,12 +284,12 @@ void BaseStage::updatePlayerPos() {
 	}
 
 	if (playerEasing) {
-		const auto halfBeatTime = 60 * Time::oneSec / musicBpm / 2.f;
-		const auto easeAllTime = halfBeatTime / 2;
+		const float halfBeatTime = 60 * Time::oneSec / musicBpm / 2.f;
+		const float easeAllTime = halfBeatTime / 2;
 
-		const auto easeNowTime = easeTime->getNowTime();
+		const Time::timeType easeNowTime = easeTime->getNowTime();
 
-		const auto easeTimeRaito = (float)easeNowTime / easeAllTime;
+		const float easeTimeRaito = (float)easeNowTime / easeAllTime;
 
 		playerObj->position = easePos(easeStartPos, easeEndPos, easeTimeRaito, easeAllTime);
 
@@ -287,27 +298,42 @@ void BaseStage::updatePlayerPos() {
 	}
 
 	if (!red->isInvisible) {
-		auto nowTime = redTimer->getNowTime();
+		Time::timeType nowTime = redTimer->getNowTime();
 
-		auto raito = (float)nowTime / (float)redTime;
+		float raito = (float)nowTime / (float)redTime;
 		if (raito >= 1.f) {
 			red->isInvisible = true;	// 定めた時間が経過したら終了
+			cameraPosShakeVal = { 0, 0, 0 };
+			camera->setEye(cameraPosShakeVal);
 		} else {
-			red->color.w = (1.f - raito) * 0.5f;	// 0 ~ 0.5の範囲で変化
+			constexpr float shakeRaitoMax = 1.f / 3.f;	// 画面シェイクする時間
+			const float shakeRaito = raito / shakeRaitoMax;	// 現在の画面シェイク経過時間
+			if (shakeRaito < 1.f) {
+				// 画面シェイクの大きさ
+				const float shakeRange = mapSide / 2.f * (1.f - shakeRaito) * (1.f - shakeRaito);
+				cameraPosShakeVal.x = RandomNum::getRandNormallyf(0.f, shakeRange);
+				//cameraPosShakeVal.y = RandomNum::getRandNormallyf(0.f, shakeRange);
+				cameraPosShakeVal.z = RandomNum::getRandNormallyf(0.f, shakeRange);
+			} else {
+				cameraPosShakeVal = { 0, 0, 0 };
+				camera->setEye(cameraPosShakeVal);
+			}
+
+			red->color.w = (1.f - raito) * (1.f - raito) * 0.5f;	// 0 ~ 0.5の範囲で変化
 			red->SpriteTransferVertexBuffer(spriteCommon);
 		}
 	}
 }
 
 void BaseStage::updateTime() {
-	const auto nowTime = timer->getNowTime();	// 今の時間
+	const Time::timeType nowTime = timer->getNowTime();	// 今の時間
 	const float speed = musicBpm * 2/*/2*/;		// beat / min 毎分何拍か(表裏)
-	const auto oneBeatTime = timer->getOneBeatTime(speed);	// 一拍の時間を記録
+	const Time::timeType oneBeatTime = timer->getOneBeatTime(speed);	// 一拍の時間を記録
 
 	constexpr float aheadJudgeRange = 0.25f;	// この値分次の拍の始まりが速くなる[0~1]
 
 	// 拍が変わったら
-	if (nowTime >= oneBeatTime * ((float)beatChangeNum + 1u) - oneBeatTime * aheadJudgeRange) {
+	if (nowTime >= oneBeatTime * (float)(beatChangeNum - missNum + 1u) - oneBeatTime * aheadJudgeRange) {
 		changeBeatProc(nowTime);
 	}
 
@@ -320,9 +346,9 @@ void BaseStage::updateTime() {
 	// --------------------
 	// タイミングを示す円の大きさ更新
 	// --------------------
-	constexpr float circleScaleMin = 0.3f;
-	float circleScale = beatRaito * (1.f - circleScaleMin) + circleScaleMin;
-	if (!frontBeatFlag) circleScale = 1.f - circleScale, circleScale = 0;
+	constexpr float circleScaleMin = 0.3f, circleScaleMax = 2.f;
+	float circleScale = beatRaito * (circleScaleMax - circleScaleMin) + circleScaleMin;
+	if (!frontBeatFlag) circleScale = circleScaleMax - circleScale, circleScale = 0;
 
 	circleSprite->size = XMFLOAT2(circleSprite->texSize.x * circleScale,
 								  circleSprite->texSize.y * circleScale);
@@ -338,7 +364,7 @@ void BaseStage::createParticle(const DirectX::XMFLOAT3 pos,
 							   const UINT particleNum, const float startScale) {
 	for (UINT i = 0U; i < particleNum; ++i) {
 
-		constexpr auto startCol = XMFLOAT3(1, 1, 0.75f), endCol = XMFLOAT3(1, 0, 1);
+		constexpr XMFLOAT3 startCol = XMFLOAT3(1, 1, 0.75f), endCol = XMFLOAT3(1, 0, 1);
 		constexpr int life = Time::oneSec / 4;
 		constexpr float endScale = 0.f;
 		constexpr float startRota = 0.f, endRota = 0.f;
@@ -353,14 +379,14 @@ void BaseStage::createParticle(const DirectX::XMFLOAT3 pos,
 }
 
 void BaseStage::startParticle(const DirectX::XMFLOAT3 pos) {
-	constexpr UINT particleNumMax = 50U, particleNumMin = 20U;
+	constexpr UINT particleNumMax = 100U, particleNumMin = 20U;
 	UINT particleNum = particleNumMin;
 
 	constexpr float scaleMin = 1.5f, scaleMax = 10.f;
 	constexpr UINT maxCombo = 20U;
 	float startScale = scaleMin;
 
-	auto nowComboRaito = (float)combo / maxCombo;
+	float nowComboRaito = (float)combo / maxCombo;
 	if (nowComboRaito >= 1.f) nowComboRaito = 1.f;
 	else if (nowComboRaito <= 0.f) nowComboRaito = 0.f;
 
@@ -376,7 +402,7 @@ void BaseStage::startParticle(const DirectX::XMFLOAT3 pos) {
 
 
 
-std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string& csvFilePath) {
+std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string &csvFilePath) {
 	std::vector<std::vector<std::string>> csvData{};	// csvの中身を格納
 
 	std::ifstream ifs(csvFilePath);
@@ -400,7 +426,7 @@ std::vector<std::vector<std::string>> BaseStage::loadCsv(const std::string& csvF
 	return csvData;
 }
 
-void BaseStage::loadMapFile(const std::string& csvFilePath, DirectX::XMFLOAT2* startPosition) {
+void BaseStage::loadMapFile(const std::string &csvFilePath, DirectX::XMFLOAT2 *startPosition) {
 	const auto mapFileData = loadCsv(csvFilePath);
 
 	bool findStartPosFlag = false;
@@ -530,7 +556,7 @@ void BaseStage::init() {
 	timeBarSprite->size.x = timeBarWid;
 
 	timeBarSprite->position.x = WinAPI::window_width / 2.f;
-	timeBarSprite->position.y = timeBarSprite->size.y / 2.f;
+	timeBarSprite->position.y = timeBarSprite->size.y / 2.f + debugText.fontHeight;
 
 
 	timeBarSprite->SpriteTransferVertexBuffer(spriteCommon);
@@ -642,7 +668,7 @@ void BaseStage::init() {
 				// todo 此処でゴールのオブジェクトの座標を設定する
 				goalObj.emplace_back(Object3d(dxCom->getDev(), goalModel.get(), goalTexNum));
 				{
-					auto& lastGoal = goalObj.back();
+					auto &lastGoal = goalObj.back();
 					lastGoal.position = mapObj[y][x].position;
 					lastGoal.position.y += obj3dScale;
 					lastGoal.scale = goalObjScale;
@@ -722,7 +748,10 @@ void BaseStage::init() {
 
 void BaseStage::update() {
 	// ステージ選択画面に戻る操作
-	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) SceneManager::getInstange()->changeScene(SCENE_NUM::SELECT);
+	if (input->hitKey(DIK_LSHIFT) && input->hitKey(DIK_R)) {
+		SceneManager::getInstance()->setStageNum(stageNum);
+		SceneManager::getInstance()->changeScene(SCENE_NUM::SELECT);
+	}
 
 	// 天球回転
 	backObj->rotation.y += 0.1f;
@@ -757,26 +786,26 @@ void BaseStage::update() {
 	debugText.formatPrint(spriteCommon, 0, 0, 1, dbFontCol, "Stage %u", stageNum);
 
 	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
-					1, debugText.fontHeight + 1,
+					1, debugText.fontHeight * 3 + 1,
 					1.f, shadowCol);
 	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
-					0, debugText.fontHeight);
+					0, debugText.fontHeight * 3);
 
-	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 2 + 1, 1,
+	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 5 + 1, 1,
 						  shadowCol,
 						  "%u combo", combo);
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 2, 1,
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 5, 1,
 						  dbFontCol,
 						  "%u combo", combo);
 
-	const auto timeLimit = clearCount - beatChangeNum;
+	const UINT timeLimit = clearCount - beatChangeNum;
 	const float raito = (float)timeLimit / clearCount;
 
-	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 3 + 1, 1,
+	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 6 + 1, 1,
 						  shadowCol,
 						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
-	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 3, 1,
+	debugText.formatPrint(spriteCommon, 0, debugText.fontHeight * 6, 1,
 						  XMFLOAT4(1, raito, raito, 1),
 						  "%u / %u",
 						  clearCount - beatChangeNum, clearCount);
@@ -787,12 +816,12 @@ void BaseStage::update() {
 
 	debugText.Print(spriteCommon, "TIME",
 					timeBarSprite->position.x - debugText.fontWidth * 2.f + 1,
-					timeBarSprite->position.y + 1,
+					timeBarSprite->position.y - debugText.fontHeight + 1,
 					1.f,
 					shadowCol);
 	debugText.Print(spriteCommon, "TIME",
 					timeBarSprite->position.x - debugText.fontWidth * 2.f,
-					timeBarSprite->position.y,
+					timeBarSprite->position.y - debugText.fontHeight,
 					1.f,
 					dbFontCol);
 
@@ -819,8 +848,8 @@ void BaseStage::drawObj3d() {
 	Object3d::startDraw(DirectXCommon::getInstance()->getCmdList(), object3dPipelineSet);
 
 	// 壁描画
-	for (auto& y : mapObj) {
-		for (auto& x : y) {
+	for (auto &y : mapObj) {
+		for (auto &x : y) {
 			x.drawWithUpdate(camera->getViewMatrix(), dxCom);
 		}
 	}
@@ -829,7 +858,7 @@ void BaseStage::drawObj3d() {
 	playerObj->drawWithUpdate(camera->getViewMatrix(), dxCom);
 
 	// ゴールモデル描画
-	for (auto& i : goalObj) {
+	for (auto &i : goalObj) {
 		i.drawWithUpdate(camera->getViewMatrix(), dxCom);
 	}
 

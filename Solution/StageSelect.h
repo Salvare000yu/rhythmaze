@@ -61,6 +61,8 @@ class StageSelect :
 	std::unique_ptr<Sound::SoundCommon> soundCom;
 	std::unique_ptr<Sound> sceneChangeSe;
 
+	float grWid;
+
 public:
 	void init() override;
 	void update() override;

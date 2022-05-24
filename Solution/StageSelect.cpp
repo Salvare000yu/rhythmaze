@@ -15,7 +15,7 @@ namespace {
 	constexpr UINT stageNum = 15;	// ステージの総数
 	constexpr UINT spriteNum = stageNum + 1;	// ステージ数 + 操作説明シーン
 
-	inline XMFLOAT2 operator*(const XMFLOAT2& left, const float right) {
+	inline XMFLOAT2 operator*(const XMFLOAT2 &left, const float right) {
 		return XMFLOAT2(left.x * right, left.y * right);
 	}
 	inline XMFLOAT2 operator*(const float left, const XMFLOAT2 right) {
@@ -24,31 +24,91 @@ namespace {
 	inline XMFLOAT2 operator*(const XMFLOAT2 left, const XMFLOAT2 right) {
 		return XMFLOAT2(left.x * right.x, left.y * right.y);
 	}
+
+	void changeSelect(const UINT &nowSelect, SCENE_NUM &SELECT) {
+		// undone シーンを追加する際は此処の分岐も増やす
+		switch (nowSelect) {
+		case 0:
+			SELECT = SCENE_NUM::EXPLANATION;
+			break;
+		case 1:
+			SELECT = SCENE_NUM::STAGE1;
+			break;
+		case 2:
+			SELECT = SCENE_NUM::STAGE2;
+			break;
+		case 3:
+			SELECT = SCENE_NUM::STAGE3;
+			break;
+		case 4:
+			SELECT = SCENE_NUM::STAGE4;
+			break;
+		case 5:
+			SELECT = SCENE_NUM::STAGE5;
+			break;
+		case 6:
+			SELECT = SCENE_NUM::STAGE6;
+			break;
+		case 7:
+			SELECT = SCENE_NUM::STAGE7;
+			break;
+		case 8:
+			SELECT = SCENE_NUM::STAGE8;
+			break;
+		case 9:
+			SELECT = SCENE_NUM::STAGE9;
+			break;
+		case 10:
+			SELECT = SCENE_NUM::STAGE10;
+			break;
+		case 11:
+			SELECT = SCENE_NUM::STAGE11;
+			break;
+		case 12:
+			SELECT = SCENE_NUM::STAGE12;
+			break;
+		case 13:
+			SELECT = SCENE_NUM::STAGE13;
+			break;
+		case 14:
+			SELECT = SCENE_NUM::STAGE14;
+			break;
+		case 15:
+			SELECT = SCENE_NUM::STAGE15;
+			break;
+		default:
+			SELECT = SCENE_NUM::EXPLANATION;
+			break;
+		}
+	}
 }
 
 void StageSelect::init() {
 	input = Input::getInstance();
+
+	// 最後にプレイしたステージを取得(未プレイなら0)
+	nowSelect = SceneManager::getInstance()->getStageNum();
 
 	// --------------------
 	// スプライト共通
 	// --------------------
 	spCom = Sprite::createSpriteCommon(DirectXCommon::getInstance()->getDev(), WinAPI::window_width, WinAPI::window_height);
 
-	constexpr auto stageNumTexNum = 0;
-	constexpr auto backSpriteNum = stageNumTexNum + 1;
-	constexpr auto leftArrowTexNum = backSpriteNum + 1;
-	constexpr auto arrowStrTexNum = leftArrowTexNum + 1;
-	constexpr auto returnTitleTexNum = arrowStrTexNum + 1;
-	constexpr auto space2SelectTexNum = returnTitleTexNum + 1;
-	constexpr auto moveFirstTexNum = space2SelectTexNum + 1;
-	constexpr auto moveLastTexNum = moveFirstTexNum + 1;
-	constexpr auto backTexNum = moveLastTexNum + 1;
-	constexpr auto cursorTexNum = backTexNum + 1;
+	constexpr UINT stageNumTexNum = 0u;
+	constexpr UINT backSpriteNum = stageNumTexNum + 1;
+	constexpr UINT leftArrowTexNum = backSpriteNum + 1;
+	constexpr UINT arrowStrTexNum = leftArrowTexNum + 1;
+	constexpr UINT returnTitleTexNum = arrowStrTexNum + 1;
+	constexpr UINT space2SelectTexNum = returnTitleTexNum + 1;
+	constexpr UINT moveFirstTexNum = space2SelectTexNum + 1;
+	constexpr UINT moveLastTexNum = moveFirstTexNum + 1;
+	constexpr UINT backTexNum = moveLastTexNum + 1;
+	constexpr UINT cursorTexNum = backTexNum + 1;
 	// --------------------
 	// スプライト共通テクスチャ読み込み
 	// --------------------
 	// 画像サイズ
-	const auto stageGraphSize = Sprite::commonLoadTexture(spCom, stageNumTexNum,
+	const XMFLOAT2 stageGraphSize = Sprite::commonLoadTexture(spCom, stageNumTexNum,
 														  L"Resources/StageSelect/stageNum.png",
 														  DirectXCommon::getInstance()->getDev());
 	Sprite::commonLoadTexture(spCom, backSpriteNum,
@@ -94,8 +154,8 @@ void StageSelect::init() {
 		stage[i].texLeftTop.x = i * oneGraphWid;
 		stage[i].texSize.x = oneGraphWid;
 
-		const auto grWid = stage[0].size.x * 1.5f;
-		stage[i].position.x = grWid * i + WinAPI::window_width / 2.f;
+		grWid = stage[0].texSize.x * 1.25f;
+		stage[i].position.x = grWid * i - (nowSelect * grWid) + WinAPI::window_width / 2.f;
 		stage[i].position.y = WinAPI::window_height / 2.f;
 
 		stage[i].size = unSelectScale * stage[0].texSize;
@@ -103,10 +163,9 @@ void StageSelect::init() {
 
 		stage[i].SpriteTransferVertexBuffer(spCom);
 	}
-	stage[0].color = selectCol;
-	stage[0].size = selectScale * stage[0].texSize;
-	stage[0].SpriteTransferVertexBuffer(spCom);
-
+	stage[nowSelect].size = selectScale * stage[0].texSize;
+	stage[nowSelect].color = selectCol;
+	stage[nowSelect].SpriteTransferVertexBuffer(spCom);
 
 	// 各ステージ画像の背景
 	stageBack.reserve(stage.size());
@@ -123,13 +182,15 @@ void StageSelect::init() {
 		// 頂点バッファに反映
 		stageBack[i].SpriteTransferVertexBuffer(spCom);
 	}
+	stageBack[nowSelect].size = selectScale * stageBack[0].texSize;
+	stageBack[nowSelect].SpriteTransferVertexBuffer(spCom);
 
 
 	// 矢印
 	constexpr UINT arrowNum = 2u;
 	arrow.resize(arrowNum);
 
-	for (auto& i : arrow) {
+	for (auto &i : arrow) {
 		i.create(DirectXCommon::getInstance()->getDev(),
 				 WinAPI::window_width, WinAPI::window_height,
 				 leftArrowTexNum, spCom, XMFLOAT2(1.f, 0.5f));
@@ -142,7 +203,7 @@ void StageSelect::init() {
 	arrow[ARROW_TEX::LEFT_ARROW].isInvisible = !(bool)nowSelect;
 	arrow[ARROW_TEX::RIGHT_ARROW].isInvisible = nowSelect >= stageNum;
 
-	for (auto& i : arrow) {
+	for (auto &i : arrow) {
 		i.SpriteTransferVertexBuffer(spCom);
 	}
 
@@ -199,11 +260,14 @@ void StageSelect::init() {
 
 	soundCom.reset(new Sound::SoundCommon());
 	sceneChangeSe.reset(new Sound("Resources/SE/Shortbridge29-1.wav", soundCom.get()));
+
+	// SELECTの値をセットする
+	changeSelect(nowSelect, SELECT);
 }
 
 void StageSelect::update() {
 	if (input->triggerKey(DIK_R)) {
-		SceneManager::getInstange()->changeScene(SCENE_NUM::TITLE);
+		SceneManager::getInstance()->changeScene(SCENE_NUM::TITLE);
 	} else if (!sceneChangeFlag) {
 		const auto inputR = input->triggerKey(DIK_RIGHT) || input->triggerKey(DIK_D);
 		const auto inputL = input->triggerKey(DIK_LEFT) || input->triggerKey(DIK_A);
@@ -229,8 +293,8 @@ void StageSelect::update() {
 			}
 
 			if (changeFlag) {
+				//const auto grWid = stage[0].texSize.x * 1.5f;
 				for (UINT i = 0, size = stage.size(); i < size; ++i) {
-					const auto grWid = stage[0].size.x * 1.5f;
 					stage[i].position.x = grWid * i - (nowSelect * grWid) + WinAPI::window_width / 2.f;
 					stageBack[i].position.x = stage[i].position.x;
 
@@ -256,65 +320,12 @@ void StageSelect::update() {
 				stageBack[nowSelect].size = selectScale * stageBack[nowSelect].texSize;
 				stageBack[nowSelect].SpriteTransferVertexBuffer(spCom);
 
-				// undone シーンを追加する際は此処の分岐も増やす
-				switch (nowSelect) {
-				case 0:
-					SELECT = SCENE_NUM::EXPLANATION;
-					break;
-				case 1:
-					SELECT = SCENE_NUM::STAGE1;
-					break;
-				case 2:
-					SELECT = SCENE_NUM::STAGE2;
-					break;
-				case 3:
-					SELECT = SCENE_NUM::STAGE3;
-					break;
-				case 4:
-					SELECT = SCENE_NUM::STAGE4;
-					break;
-				case 5:
-					SELECT = SCENE_NUM::STAGE5;
-					break;
-				case 6:
-					SELECT = SCENE_NUM::STAGE6;
-					break;
-				case 7:
-					SELECT = SCENE_NUM::STAGE7;
-					break;
-				case 8:
-					SELECT = SCENE_NUM::STAGE8;
-					break;
-				case 9:
-					SELECT = SCENE_NUM::STAGE9;
-					break;
-				case 10:
-					SELECT = SCENE_NUM::STAGE10;
-					break;
-				case 11:
-					SELECT = SCENE_NUM::STAGE11;
-					break;
-				case 12:
-					SELECT = SCENE_NUM::STAGE12;
-					break;
-				case 13:
-					SELECT = SCENE_NUM::STAGE13;
-					break;
-				case 14:
-					SELECT = SCENE_NUM::STAGE14;
-					break;
-				case 15:
-					SELECT = SCENE_NUM::STAGE15;
-					break;
-				default:
-					SELECT = SCENE_NUM::EXPLANATION;
-					break;
-				}
+				changeSelect(nowSelect, SELECT);
 			}
 		} else {
 			// スペースを押したら選んだシーンに移動
 			if (input->triggerKey(DIK_SPACE)) {
-				//SceneManager::getInstange()->changeScene(SELECT);
+				//SceneManager::getInstance()->changeScene(SELECT);
 				sceneChangeFlag = true;
 				sceneChangeTimer.reset(new Time());
 				Sound::SoundPlayWave(soundCom.get(), sceneChangeSe.get());
@@ -326,7 +337,7 @@ void StageSelect::update() {
 		constexpr float sceneChangeTime = Time::oneSec * 0.75f;
 		const float raito = (float)sceneChangeTimer->getNowTime() / sceneChangeTime;
 		if (raito > 1.f) {
-			SceneManager::getInstange()->changeScene(SELECT);
+			SceneManager::getInstance()->changeScene(SELECT);
 		} else {
 			const auto easeRaito = pow(raito, 3);
 
@@ -354,21 +365,27 @@ void StageSelect::draw() {
 	Sprite::drawStart(spCom, DirectXCommon::getInstance()->getCmdList());
 	// 背景
 	back->drawWithUpdate(DirectXCommon::getInstance(), spCom);
-	// スプライト描画
-	cursor->drawWithUpdate(DirectXCommon::getInstance(), spCom);
+
+	// 選択中ではないステージ描画
 	for (UINT i = 0, size = stage.size(); i < size; ++i) {
-		stageBack[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
-		stage[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
+		if (i != nowSelect) {
+			stageBack[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
+			stage[i].drawWithUpdate(DirectXCommon::getInstance(), spCom);
+		}
 	}
 	arrowStr->drawWithUpdate(DirectXCommon::getInstance(), spCom);
-	for (auto& i : arrow) {
+	for (auto &i : arrow) {
 		i.drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	}
 	returnTitle->drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	space2Select->drawWithUpdate(DirectXCommon::getInstance(), spCom);
-	for (auto& i : shiftAndArrow) {
+	for (auto &i : shiftAndArrow) {
 		i.drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	}
+	// 選択中のステージ描画
+	cursor->drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	stageBack[nowSelect].drawWithUpdate(DirectXCommon::getInstance(), spCom);
+	stage[nowSelect].drawWithUpdate(DirectXCommon::getInstance(), spCom);
 	// デバッグテキスト描画
 	debugText.DrawAll(DirectXCommon::getInstance(), spCom);
 }

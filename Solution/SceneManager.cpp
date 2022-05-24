@@ -28,7 +28,7 @@ SceneManager::SceneManager()
 	nowScene = (GameScene*)new TitleScene();
 }
 
-SceneManager* SceneManager::getInstange() {
+SceneManager* SceneManager::getInstance() {
 	static SceneManager sm;
 	return &sm;
 }
@@ -132,7 +132,8 @@ void SceneManager::changeScene(const SCENE_NUM nextScene) {
 	this->nextScene = nextScene;
 }
 
-void SceneManager::goal(const unsigned clearHalfBeat, const unsigned clearCombo, const bool achieving) {
+void SceneManager::goal(unsigned stageNum, const unsigned clearHalfBeat, const unsigned clearCombo, const bool achieving) {
+	this->stageNum = stageNum;
 	this->clearHalfBeat = clearHalfBeat;
 	this->clearCombo = clearCombo;
 	this->achieving = achieving;

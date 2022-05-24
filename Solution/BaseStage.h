@@ -107,7 +107,8 @@ protected:
 
 #pragma region 移動関連情報
 
-	unsigned beatChangeNum = 0;
+	unsigned beatChangeNum = 0u;
+	unsigned missNum = 0u;
 
 	Time::timeType beatChangeTime = 0;
 
@@ -135,6 +136,8 @@ protected:
 #pragma region カメラ
 
 	std::unique_ptr<Camera> camera;
+	DirectX::XMFLOAT3 cameraPosShakeVal{};
+	DirectX::XMFLOAT3 cameraCenterPos{};
 
 #pragma endregion カメラ
 
@@ -206,7 +209,7 @@ protected:
 	std::wstring backModelTexPath = L"Resources/model/back/back_tex.png";
 
 	std::wstring goalModelPath = L"Resources/model/goal/goal.obj";
-	std::wstring goalModelTexPath = L"Resources/model/player/nanohanairo.png";
+	std::wstring goalModelTexPath = L"Resources/model/goal/lightBlue.png";
 
 #pragma endregion ファイルパス
 

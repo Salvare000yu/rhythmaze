@@ -274,7 +274,7 @@ void ParticleManager::add(Time* timer, int life,
 	constexpr float planeAngle = XM_PI / 180.f;
 	const auto angleFai = planeAngle * RandomNum::getRandf(0, 359);
 	const auto angleTheata = planeAngle * RandomNum::getRandf(0, 359);
-	const float v = RandomNum::getRand(128, 256);
+	const float v = RandomNum::getRand(160, 320);
 
 	p.velocity.x = v * mySin(angleTheata) * myCos(angleFai);
 	p.velocity.y = v * myCos(angleTheata);

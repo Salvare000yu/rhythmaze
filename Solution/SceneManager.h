@@ -32,6 +32,7 @@ private:
 	GameScene* nowScene = nullptr;
 	SCENE_NUM nextScene;
 
+	unsigned stageNum = 0u;
 	unsigned clearHalfBeat = 0u;	// クリア時間
 	unsigned clearCombo = 0u;	// クリア時のコンボ
 	bool achieving = true;
@@ -40,7 +41,9 @@ public:
 	// https://dixq.net/g/sp_06.html
 	// ↓SceneMgr.h↓　シーン管理部
 
-	static SceneManager* getInstange();
+	static SceneManager* getInstance();
+
+	void setStageNum(unsigned stageNum) { this->stageNum = stageNum; }
 
 	void init() override;
 	void update() override;
@@ -48,8 +51,9 @@ public:
 	void fin() override;
 
 	void changeScene(const SCENE_NUM nextScene);
-	void goal(const unsigned clearHalfBeat, const unsigned clearCombo, const bool achieving = true);
+	void goal(unsigned stageNum, const unsigned clearHalfBeat, const unsigned clearCombo, const bool achieving = true);
 
+	inline unsigned getStageNum() const { return stageNum; }
 	inline unsigned getClearHalfBeat() const { return clearHalfBeat; }
 	inline unsigned getClearCombo() const { return clearCombo; }
 	inline bool getAchieving() const { return achieving; }
