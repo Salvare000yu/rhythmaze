@@ -31,28 +31,25 @@ void TitleScene::init() {
 
 	constexpr UINT titleSpriteNum = 0;
 	Sprite::commonLoadTexture(spCom, titleSpriteNum, L"Resources/backSprite/titlemoji.png", DirectXCommon::getInstance()->getDev());
-<<<<<<< HEAD
-	constexpr UINT titleBackSpriteNum = 1;
-	Sprite::commonLoadTexture(spCom, titleBackSpriteNum, L"Resources/backSprite/titlehaikei.png", DirectXCommon::getInstance()->getDev());
-=======
+
+	/*constexpr UINT titleBackSpriteNum = 1;
+	Sprite::commonLoadTexture(spCom, titleBackSpriteNum, L"Resources/backSprite/titlehaikei.png", DirectXCommon::getInstance()->getDev());*/
 
 	constexpr UINT titleBackSpriteNum = titleSpriteNum + 1;
 	Sprite::commonLoadTexture(spCom, titleBackSpriteNum, L"Resources/backSprite/titlehaikei.png", DirectXCommon::getInstance()->getDev());
 
 	constexpr UINT pressSpaceSpriteNum = titleBackSpriteNum + 1;
 	Sprite::commonLoadTexture(spCom, pressSpaceSpriteNum, L"Resources/backSprite/titlePressSpace.png", DirectXCommon::getInstance()->getDev());
->>>>>>> 1971a27eb782d15200fb52627bc3cc0fed618d00
 
 	titleSprite.reset(new Sprite());
 	titleSprite->create(DirectXCommon::getInstance()->getDev(),
 						WinAPI::window_width, WinAPI::window_height,
 						titleSpriteNum, spCom, DirectX::XMFLOAT2(0, 0), false, false);
-<<<<<<< HEAD
 	titleBackSprite.reset(new Sprite());
 	titleBackSprite->create(DirectXCommon::getInstance()->getDev(),
 		WinAPI::window_width, WinAPI::window_height,
 		titleBackSpriteNum, spCom, DirectX::XMFLOAT2(0, 0), false, false);
-=======
+
 	
 	titleBackSprite.reset(new Sprite());
 	titleBackSprite->create(DirectXCommon::getInstance()->getDev(),
@@ -64,7 +61,6 @@ void TitleScene::init() {
 							WinAPI::window_width, WinAPI::window_height,
 					   pressSpaceSpriteNum, spCom, DirectX::XMFLOAT2(0, 0), false, false);
 	pressSpace->isInvisible = true;
->>>>>>> 1971a27eb782d15200fb52627bc3cc0fed618d00
 
 	// デバッグテキスト用のテクスチャ読み込み
 	Sprite::commonLoadTexture(spCom, debugTextTexNumber, L"Resources/debugfont.png", DirectXCommon::getInstance()->getDev());
