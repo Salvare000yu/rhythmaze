@@ -23,19 +23,14 @@ void EndScene::init() {
 
 	std::wstring backSpritePath;
 
+	snprintf(clearinfiStr, _countof(clearinfiStr),
+			 "stage %u\ncombo:%u\ncount:%u",
+			 SceneManager::getInstance()->getStageNum(),
+			 SceneManager::getInstance()->getClearCombo(),
+			 SceneManager::getInstance()->getClearHalfBeat());
 	if (cleared) {
-		snprintf(clearinfiStr, _countof(clearinfiStr),
-				 "stage %u\nclear combo : %u\nclear count : %u",
-				 SceneManager::getInstance()->getStageNum(),
-				 SceneManager::getInstance()->getClearCombo(),
-				 SceneManager::getInstance()->getClearHalfBeat());
 		backSpritePath = L"Resources/backSprite/clear.png";
 	} else {
-		snprintf(clearinfiStr, _countof(clearinfiStr),
-				 "stage %u\ncount : %u\ncombo : %u",
-				 SceneManager::getInstance()->getStageNum(),
-				 SceneManager::getInstance()->getClearHalfBeat(),
-				 SceneManager::getInstance()->getClearCombo());
 		backSpritePath = L"Resources/backSprite/failed.png";
 	}
 
@@ -62,9 +57,12 @@ void EndScene::update() {
 		SceneManager::getInstance()->changeScene(SCENE_NUM::SELECT);
 	}
 
-	debugText.Print(spCom, "SPACE : back Stage select", 0, WinAPI::window_height / 2.f);
-
-	debugText.Print(spCom, clearinfiStr, 0, WinAPI::window_height / 2.f + debugText.fontHeight * 2);
+	debugText.Print(spCom, clearinfiStr,
+					WinAPI::window_width * 0.375f + 1, WinAPI::window_height * 0.41f + 1, 1.f,
+					{ 0, 0, 0, 1 });
+	debugText.Print(spCom, clearinfiStr,
+					WinAPI::window_width * 0.375f, WinAPI::window_height * 0.41f, 1.f,
+					{ 1, 1, 1, 1 });
 }
 
 void EndScene::draw() {
