@@ -136,6 +136,8 @@ protected:
 #pragma region ƒJƒƒ‰
 
 	std::unique_ptr<Camera> camera;
+	DirectX::XMFLOAT3 cameraPosShakeVal{};
+	DirectX::XMFLOAT3 cameraCenterPos{};
 
 #pragma endregion ƒJƒƒ‰
 
