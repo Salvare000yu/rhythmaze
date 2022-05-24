@@ -784,11 +784,11 @@ void BaseStage::update() {
 	debugText.formatPrint(spriteCommon, 1, 1, 1, shadowCol, "Stage %u", stageNum);
 	debugText.formatPrint(spriteCommon, 0, 0, 1, dbFontCol, "Stage %u", stageNum);
 
-	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
-					1, debugText.fontHeight * 3 + 1,
+	debugText.Print(spriteCommon, "LSHIFT+R : Return SELECT",
+					1, WinAPI::window_height - debugText.fontHeight * 2 + 1,
 					1.f, shadowCol);
-	debugText.Print(spriteCommon, "LSHIFT + R : Return SELECT",
-					0, debugText.fontHeight * 3);
+	debugText.Print(spriteCommon, "LSHIFT+R : Return SELECT",
+					0, WinAPI::window_height - debugText.fontHeight * 2);
 
 	debugText.formatPrint(spriteCommon, 1, debugText.fontHeight * 5 + 1, 1,
 						  shadowCol,
