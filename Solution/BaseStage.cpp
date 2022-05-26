@@ -127,12 +127,12 @@ void BaseStage::updateLightPosition() {
 void BaseStage::updateCamera() {
 	// ˆÚ“®—Ê
 	const float moveSpeed = 75.f / dxCom->getFPS();
-	// Ž‹“_ˆÚ“®
-	if (input->hitKey(DIK_E)) {
-		camera->moveForward(moveSpeed);
-	} else if (input->hitKey(DIK_Z)) {
-		camera->moveForward(-moveSpeed);
-	}
+	//// Ž‹“_ˆÚ“®
+	//if (input->hitKey(DIK_E)) {
+	//	camera->moveForward(moveSpeed);
+	//} else if (input->hitKey(DIK_Z)) {
+	//	camera->moveForward(-moveSpeed);
+	//}
 
 	XMFLOAT3 camPos = camera->getEye();
 	camPos.x = playerObj->position.x;
