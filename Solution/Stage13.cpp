@@ -25,7 +25,7 @@ void Stage13::pathInit() {
 
 	//effectTexPath = L"Resources/effect1.png";
 
-	bgmFilePath = "Resources/Music/C_rhythmaze_125.wav";
+	bgmFilePath = "Resources/Music/D_rhythmaze_119.wav";
 
 	//particleSeFilePath = "Resources/SE/Sys_Set03-click.wav";
 }
@@ -34,7 +34,7 @@ void Stage13::pathInit() {
 void Stage13::additionalInit() {
 	stageNum = 13u;
 
-	musicBpm = 125.f;
+	musicBpm = 119.f;
 
 	bgmBolume = 0.4f;
 

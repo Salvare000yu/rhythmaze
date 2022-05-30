@@ -77,7 +77,7 @@ void TitleScene::init() {
 
 	// ‰¹
 	soundCom.reset(new Sound::SoundCommon());
-	constexpr char titleBgmPath[] = "Resources/Music/BGM.wav";
+	constexpr char titleBgmPath[] = "Resources/Music/C_rhythmaze_125.wav";
 	bgm.reset(new Sound(titleBgmPath, soundCom.get()));
 
 	sceneChangeSe.reset(new Sound("Resources/SE/Shortbridge29-1.wav", soundCom.get()));
